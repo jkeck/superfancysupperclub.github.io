@@ -84,6 +84,8 @@
   .frame {
     position: fixed;
     inset: var(--frame-inset);
+    /* Account for hairline frame width in margin to prevent content from displaying behind hairline frame */
+    margin: -10px;
     border: 1px solid var(--brass);
     pointer-events: none;
     z-index: 2;
