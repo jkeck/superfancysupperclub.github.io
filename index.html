@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Super Fancy Supper Club</title>
+<meta name="description" content="An itinerant feast through the Bay Area Peninsula. Coming soon." />
+
+<meta property="og:title" content="The Super Fancy Supper Club" />
+<meta property="og:description" content="An itinerant feast through the Bay Area Peninsula. Coming soon." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://superfancysupperclub.com" />
+<meta property="og:image" content="https://superfancysupperclub.com/favicons/wax-seal-512.png" />
+<meta name="theme-color" content="#0e2419" />
+
+<!-- Favicons (currently: wax seal — swap path prefix to "crossed-cutlery" to use the cutlery set) -->
+<link rel="icon" type="image/svg+xml" href="favicons/wax-seal.svg" />
+<link rel="icon" type="image/png" sizes="32x32" href="favicons/wax-seal-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="favicons/wax-seal-16.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="favicons/wax-seal-180.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Italiana&display=swap" rel="stylesheet" />
+
+<style>
+  /* ── Tokens ───────────────────────────────────────────────── */
+  :root {
+    --green-deep:  #061812;
+    --green:       #0e2419;
+    --green-mid:   #163022;
+    --green-soft:  #1d3d2c;
+    --brass:       #c9a767;
+    --brass-hi:    #e7d09a;
+    --brass-lo:    #8a6f2e;
+    --brass-faint: #5a4818;
+
+    --serif-display: "Cinzel", serif;
+    --serif-italic:  "Italiana", serif;
+    --serif-body:    "Cormorant Garamond", serif;
+
+    --frame-inset: clamp(14px, 2.5vw, 36px);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { background: var(--green-deep); }
+
+  body {
+    min-height: 100vh;
+    color: var(--brass-hi);
+    font-family: var(--serif-body);
+    font-size: 18px;
+    line-height: 1.55;
+    background:
+      radial-gradient(ellipse at 50% 28%, var(--green-mid) 0%, var(--green) 55%, var(--green-deep) 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* damask dot field */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    opacity: 0.06;
+    background-image:
+      radial-gradient(circle at 20px 20px, var(--brass) 1.2px, transparent 1.5px),
+      radial-gradient(circle at 60px 60px, var(--brass) 0.6px, transparent 1px);
+    background-size: 80px 80px;
+    z-index: 0;
+  }
+  /* vignette */
+  body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+    z-index: 0;
+  }
+
+  /* ── Art Deco hairline frame ──────────────────────────────── */
+  .frame {
+    position: fixed;
+    inset: var(--frame-inset);
+    border: 1px solid var(--brass);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .frame::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--brass-lo);
+  }
+  .frame .corner {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--brass);
+    transform: rotate(45deg);
+    box-shadow: 0 0 0 3px var(--green);
+  }
+  .frame .corner.tl { top: -7px; left: -7px; }
+  .frame .corner.tr { top: -7px; right: -7px; }
+  .frame .corner.bl { bottom: -7px; left: -7px; }
+  .frame .corner.br { bottom: -7px; right: -7px; }
+
+  @media (max-width: 480px) {
+    .frame .corner { width: 10px; height: 10px; box-shadow: 0 0 0 2px var(--green); }
+    .frame .corner.tl, .frame .corner.tr { top: -5px; }
+    .frame .corner.bl, .frame .corner.br { bottom: -5px; }
+    .frame .corner.tl, .frame .corner.bl { left: -5px; }
+    .frame .corner.tr, .frame .corner.br { right: -5px; }
+  }
+
+  /* ── Layout ───────────────────────────────────────────────── */
+  .page {
+    position: fixed;
+    inset: var(--frame-inset);
+    overflow-y: auto;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    padding:
+      clamp(40px, 7vh, 80px)
+      clamp(28px, 6vw, 96px)
+      clamp(48px, 6vh, 72px);
+  }
+
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: clamp(22px, 3vh, 32px);
+    padding: clamp(20px, 4vh, 40px) 0;
+  }
+
+  /* ── EST · MMXXV ──────────────────────────────────────────── */
+  .est {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 2vw, 18px);
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 1.05vw, 11px);
+    letter-spacing: 0.42em;
+    color: var(--brass);
+  }
+  .est .rule {
+    width: clamp(36px, 8vw, 70px);
+    height: 1px;
+    background: var(--brass);
+  }
+
+  /* ── Title ────────────────────────────────────────────────── */
+  .title-block { margin: 0; }
+  .title-the {
+    font-family: var(--serif-italic);
+    font-style: italic;
+    font-size: clamp(15px, 2.1vw, 26px);
+    letter-spacing: 0.18em;
+    color: var(--brass-hi);
+    margin-bottom: 2px;
+  }
+  .title {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-size: clamp(38px, 9.5vw, 86px);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--brass-hi);
+    text-wrap: balance;
+  }
+  .title-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 1.6vw, 16px);
+    margin: clamp(10px, 1.6vh, 16px) 0;
+  }
+  .title-divider .rule {
+    width: clamp(60px, 12vw, 130px);
+    height: 1px;
+    background: var(--brass-lo);
+  }
+  .title-divider .glyph {
+    font-size: clamp(14px, 1.8vw, 20px);
+    color: var(--brass);
+  }
+
+  /* ── Tagline ──────────────────────────────────────────────── */
+  .tagline {
+    font-style: italic;
+    font-size: clamp(17px, 2vw, 22px);
+    color: #cbb077;
+    max-width: 64ch;
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* ── Coming Soon ──────────────────────────────────────────── */
+  .coming {
+    font-family: var(--serif-display);
+    font-size: clamp(10px, 1.2vw, 13px);
+    letter-spacing: 0.5em;
+    color: var(--brass);
+    padding-left: 0.5em; /* compensate for trailing letter-spacing */
+  }
+
+  /* ── Features ────────────────────────────────────────────── */
+  .features {
+    width: 100%;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px clamp(24px, 5vw, 70px);
+    margin-top: clamp(8px, 1.5vh, 16px);
+  }
+  .feature .name {
+    font-family: var(--serif-display);
+    font-size: clamp(10px, 1.05vw, 12px);
+    letter-spacing: 0.3em;
+    color: var(--brass);
+  }
+  .feature .desc {
+    font-size: clamp(13px, 1.3vw, 15px);
+    font-style: italic;
+    color: var(--brass-lo);
+    margin-top: 3px;
+  }
+
+  @media (max-width: 720px) {
+    .features {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px 32px;
+      max-width: 460px;
+    }
+  }
+  @media (max-width: 380px) {
+    .features {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      text-align: center;
+    }
+  }
+
+  /* ── Footer ───────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 1vw, 11px);
+    letter-spacing: 0.42em;
+    color: var(--brass-lo);
+    padding-left: 0.42em;
+  }
+  footer .sep { margin: 0 0.6em; }
+
+  @media (max-width: 520px) {
+    footer { letter-spacing: 0.3em; font-size: 9px; line-height: 1.9; }
+    footer .sep { display: inline-block; margin: 0 0.4em; }
+  }
+
+  /* ── Mobile spacing tweaks ────────────────────────────────── */
+  @media (max-width: 520px) {
+    .page {
+      padding-top: clamp(28px, 5vh, 56px);
+      padding-left: clamp(16px, 5vw, 28px);
+      padding-right: clamp(16px, 5vw, 28px);
+    }
+    main { gap: 18px; }
+    .tagline { max-width: 26ch; }
+    .est { letter-spacing: 0.32em; }
+    .coming { letter-spacing: 0.36em; padding-left: 0.36em; }
+  }
+
+  /* Tighter on very short viewports (landscape phones) */
+  @media (max-height: 620px) and (min-width: 720px) {
+    main { gap: 16px; }
+    .features { margin-top: 4px; }
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- decorative double frame with corner diamonds -->
+  <div class="frame" aria-hidden="true">
+    <span class="corner tl"></span>
+    <span class="corner tr"></span>
+    <span class="corner bl"></span>
+    <span class="corner br"></span>
+  </div>
+
+  <div class="page">
+
+    <main>
+      <div class="est">
+        <span class="rule"></span>
+        <span>EST · MMXXV</span>
+        <span class="rule"></span>
+      </div>
+
+      <div class="title-block">
+        <div class="title-the">the</div>
+        <h1 class="title">SUPER FANCY</h1>
+        <div class="title-divider">
+          <span class="rule"></span>
+          <span class="glyph">❖</span>
+          <span class="rule"></span>
+        </div>
+        <h1 class="title">SUPPER CLUB</h1>
+      </div>
+
+      <p class="tagline">
+        A roving dinner club for people who said yes to dessert and then yes to a digestif.
+      </p>
+
+      <div class="coming">❦ &nbsp;&nbsp; COMING SOON &nbsp;&nbsp; ❦</div>
+
+      <div class="features" role="list" aria-label="Planned features">
+        <div class="feature" role="listitem">
+          <div class="name">PAST DINNERS</div>
+          <div class="desc">A ledger of conquests</div>
+        </div>
+        <div class="feature" role="listitem">
+          <div class="name">THE WISHLIST</div>
+          <div class="desc">Where we go next</div>
+        </div>
+        <div class="feature" role="listitem">
+          <div class="name">THE PICKER</div>
+          <div class="desc">A democratic process</div>
+        </div>
+        <div class="feature" role="listitem">
+          <div class="name">UPCOMING</div>
+          <div class="desc">With a proper countdown</div>
+        </div>
+        <div class="feature" role="listitem">
+          <div class="name">PHOTOGRAPHS</div>
+          <div class="desc">Receipts, plural</div>
+        </div>
+        <div class="feature" role="listitem">
+          <div class="name">STATISTICS</div>
+          <div class="desc">Numbers behind the meals</div>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      A DINNER PARTY OF FRIENDS<span class="sep">·</span>BAY AREA PENINSULA<span class="sep">·</span>YOUR SEAT IS RESERVED
+    </footer>
+
+  </div>
+
+</body>
+</html>
