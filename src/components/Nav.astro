@@ -1,0 +1,57 @@
+---
+interface Props {
+  activeItem?: string;
+}
+const { activeItem } = Astro.props;
+
+const items = [
+  { label: 'THE CLUB',     href: '/',             key: 'home' },
+  { label: 'PAST DINNERS', href: '/past-dinners', key: 'past-dinners' },
+  { label: 'UPCOMING',     href: '/upcoming',     key: 'upcoming' },
+  { label: 'WISHLIST',     href: '/wishlist',     key: 'wishlist' },
+  { label: 'STATS',        href: '/stats',        key: 'stats' },
+];
+---
+
+<nav aria-label="Main navigation">
+  {items.map((item, i) => (
+    <>
+      {i > 0 && <span class="sep" aria-hidden="true">·</span>}
+      <a href={item.href} class:list={['nav-item', { active: activeItem === item.key }]}
+         aria-current={activeItem === item.key ? 'page' : undefined}>
+        {item.label}
+      </a>
+    </>
+  ))}
+</nav>
+
+<style>
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
+    padding: clamp(8px, 1.2vh, 14px) 0;
+    border-bottom: 1px solid var(--brass-faint);
+    margin-bottom: clamp(20px, 3vh, 36px);
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.4em;
+  }
+  .nav-item {
+    color: var(--brass-lo);
+    text-decoration: none;
+    padding: 0 clamp(8px, 1.5vw, 18px);
+    transition: color 0.15s;
+    padding-left: 0.4em;
+  }
+  .nav-item:hover,
+  .nav-item.active {
+    color: var(--brass-hi);
+  }
+  .sep {
+    color: var(--brass-faint);
+    user-select: none;
+  }
+</style>

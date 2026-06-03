@@ -1,0 +1,182 @@
+---
+import Base from '../layouts/Base.astro';
+import dinners from '../data/dinners.json';
+import upcoming from '../data/upcoming.json';
+
+const sorted = [...dinners].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+const last = sorted[0];
+
+const nextDate = new Date(upcoming.date);
+const now = new Date();
+const daysUntil = Math.ceil((nextDate.getTime() - now.getTime()) / 86400000);
+
+const fmtShort = (d: string) =>
+  new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+---
+
+<Base title="Super Fancy Supper Club" activeNav="home">
+  <main>
+
+    <div class="est">
+      <span class="rule"></span>
+      <span>EST · MMXXV</span>
+      <span class="rule"></span>
+    </div>
+
+    <div class="title-block">
+      <div class="title-the">the</div>
+      <h1 class="title">SUPER FANCY</h1>
+      <div class="title-divider">
+        <span class="rule"></span>
+        <span class="glyph">❖</span>
+        <span class="rule"></span>
+      </div>
+      <h1 class="title">SUPPER CLUB</h1>
+    </div>
+
+    <p class="tagline">
+      A roving dinner club for people who said yes to dessert and then yes to a digestif.
+    </p>
+
+    <div class="teasers">
+      <a href="/upcoming" class="teaser">
+        <div class="teaser-label">UPCOMING</div>
+        <div class="teaser-name">{upcoming.secret ? 'TBA' : upcoming.name}</div>
+        <div class="teaser-meta">
+          {daysUntil > 1 ? `${daysUntil} days away` : daysUntil === 1 ? 'Tomorrow' : 'Tonight'}
+        </div>
+      </a>
+
+      {last && (
+        <a href="/past-dinners" class="teaser">
+          <div class="teaser-label">LAST DINNER</div>
+          <div class="teaser-name">{last.name}</div>
+          <div class="teaser-meta">{fmtShort(last.date)}</div>
+        </a>
+      )}
+    </div>
+
+  </main>
+</Base>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: clamp(18px, 2.5vh, 28px);
+    padding: clamp(16px, 3vh, 32px) 0;
+  }
+
+  /* EST · MMXXV */
+  .est {
+    display: flex;
+    align-items: center;
+    gap: clamp(12px, 2vw, 18px);
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 1.05vw, 11px);
+    letter-spacing: 0.42em;
+    color: var(--brass);
+  }
+  .est .rule {
+    width: clamp(36px, 8vw, 70px);
+    height: 1px;
+    background: var(--brass);
+  }
+
+  /* Title */
+  .title-block { margin: 0; }
+  .title-the {
+    font-family: var(--serif-italic);
+    font-style: italic;
+    font-size: clamp(15px, 2.1vw, 26px);
+    letter-spacing: 0.18em;
+    color: var(--brass-hi);
+    margin-bottom: 2px;
+  }
+  .title {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-size: clamp(38px, 9.5vw, 86px);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--brass-hi);
+    text-wrap: balance;
+  }
+  .title-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(10px, 1.6vw, 16px);
+    margin: clamp(8px, 1.2vh, 14px) 0;
+  }
+  .title-divider .rule {
+    width: clamp(60px, 12vw, 130px);
+    height: 1px;
+    background: var(--brass-lo);
+  }
+  .title-divider .glyph {
+    font-size: clamp(14px, 1.8vw, 20px);
+    color: var(--brass);
+  }
+
+  /* Tagline */
+  .tagline {
+    font-style: italic;
+    font-size: clamp(17px, 2vw, 22px);
+    color: #cbb077;
+    max-width: 56ch;
+    line-height: 1.45;
+    text-wrap: pretty;
+    margin: 0;
+  }
+
+  /* Teasers */
+  .teasers {
+    display: flex;
+    gap: clamp(20px, 4vw, 52px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .teaser {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    padding: clamp(14px, 2vh, 22px) clamp(20px, 3vw, 36px);
+    border: 1px solid var(--brass-faint);
+    transition: border-color 0.2s;
+  }
+  .teaser:hover { border-color: var(--brass-lo); }
+  .teaser-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.45em;
+    color: var(--brass-lo);
+    padding-left: 0.45em;
+  }
+  .teaser-name {
+    font-family: var(--serif-display);
+    font-size: clamp(14px, 1.6vw, 18px);
+    letter-spacing: 0.1em;
+    color: var(--brass-hi);
+    font-weight: 500;
+  }
+  .teaser-meta {
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(13px, 1.3vw, 15px);
+    color: var(--brass-lo);
+  }
+
+  @media (max-width: 520px) {
+    main { gap: 16px; }
+    .tagline { max-width: 28ch; }
+    .est { letter-spacing: 0.32em; }
+  }
+</style>

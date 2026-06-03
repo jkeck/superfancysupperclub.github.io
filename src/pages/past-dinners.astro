@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import DinnerCard from '../components/DinnerCard.astro';
+import dinners from '../data/dinners.json';
+
+const sorted = [...dinners].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+// Group by year for separators
+let lastYear: number | null = null;
+---
+
+<Base title="Past Dinners · Super Fancy Supper Club" activeNav="past-dinners">
+  <main>
+    <header class="page-header">
+      <h1 class="page-title">PAST DINNERS</h1>
+      <p class="page-subtitle">A ledger of conquests — {dinners.length} {dinners.length === 1 ? 'evening' : 'evenings'} and counting.</p>
+    </header>
+
+    <div class="dinner-list">
+      {sorted.map((dinner) => {
+        const year = new Date(dinner.date).getFullYear();
+        const showYear = year !== lastYear;
+        lastYear = year;
+        return (
+          <>
+            {showYear && <div class="year-separator"><span>{year}</span></div>}
+            <DinnerCard {...dinner} />
+            <hr class="brass-rule" />
+          </>
+        );
+      })}
+    </div>
+  </main>
+</Base>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .page-header {
+    margin-bottom: clamp(28px, 4vh, 48px);
+  }
+  .page-title {
+    margin: 0 0 8px;
+    font-family: var(--serif-display);
+    font-size: clamp(22px, 3.5vw, 40px);
+    letter-spacing: 0.14em;
+    color: var(--brass-hi);
+    font-weight: 600;
+  }
+  .page-subtitle {
+    margin: 0;
+    font-style: italic;
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--brass-lo);
+  }
+
+  .dinner-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .year-separator {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: clamp(12px, 2vh, 24px) 0 clamp(20px, 3vh, 32px);
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.5em;
+    color: var(--brass-faint);
+  }
+  .year-separator::before,
+  .year-separator::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--brass-faint);
+  }
+
+  .year-separator:first-child {
+    margin-top: 0;
+  }
+
+  /* Remove rule after last card */
+  .dinner-list > hr:last-child {
+    display: none;
+  }
+</style>

@@ -1,0 +1,326 @@
+---
+import Base from '../layouts/Base.astro';
+import StatsMap from '../components/StatsMap.astro';
+import dinners from '../data/dinners.json';
+import wishlist from '../data/wishlist.json';
+
+// ── Computed stats ───────────────────────────────────────────
+const sorted = [...dinners].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+// Cuisine counts
+const cuisineCounts: Record<string, number> = {};
+for (const d of dinners) {
+  cuisineCounts[d.cuisine] = (cuisineCounts[d.cuisine] ?? 0) + 1;
+}
+const cuisineRanked = Object.entries(cuisineCounts).sort((a, b) => b[1] - a[1]);
+const topCuisine = cuisineRanked[0];
+
+// Neighborhood counts (visited)
+const hoodCounts: Record<string, number> = {};
+for (const d of dinners) {
+  hoodCounts[d.neighborhood] = (hoodCounts[d.neighborhood] ?? 0) + 1;
+}
+const hoodRanked = Object.entries(hoodCounts).sort((a, b) => b[1] - a[1]);
+const topHood = hoodRanked[0];
+
+// Dinners per year
+const byYear: Record<number, number> = {};
+for (const d of dinners) {
+  const y = new Date(d.date).getFullYear();
+  byYear[y] = (byYear[y] ?? 0) + 1;
+}
+const years = Object.entries(byYear).sort((a, b) => Number(a[0]) - Number(b[0]));
+const maxPerYear = Math.max(...Object.values(byYear));
+
+// Average rating
+const avgRating = dinners.reduce((s, d) => s + d.rating, 0) / dinners.length;
+
+// Unexplored neighborhoods (on wishlist but never visited)
+const visitedHoods = new Set(dinners.map(d => d.neighborhood));
+const wishlistHoods = [...new Set(wishlist.map(w => w.neighborhood))].filter(h => !visitedHoods.has(h));
+
+// Longest streak: consecutive calendar months with ≥1 dinner
+function longestStreak(ds: typeof dinners) {
+  if (!ds.length) return 0;
+  const months = [...new Set(ds.map(d => {
+    const dt = new Date(d.date);
+    return dt.getFullYear() * 12 + dt.getMonth();
+  }))].sort((a, b) => a - b);
+  let max = 1, cur = 1;
+  for (let i = 1; i < months.length; i++) {
+    if (months[i] === months[i-1] + 1) { cur++; max = Math.max(max, cur); }
+    else cur = 1;
+  }
+  return max;
+}
+const streak = longestStreak(dinners);
+
+// Map pins
+const pins = dinners
+  .filter(d => d.lat && d.lng)
+  .map(d => ({ name: d.name, date: d.date, neighborhood: d.neighborhood, rating: d.rating, lat: d.lat, lng: d.lng }));
+
+const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total - n);
+---
+
+<Base title="Stats · Super Fancy Supper Club" activeNav="stats">
+  <main>
+    <header class="page-header">
+      <h1 class="page-title">STATISTICS</h1>
+      <p class="page-subtitle">Numbers behind the meals.</p>
+    </header>
+
+    <!-- Headline numbers -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-value">{dinners.length}</div>
+        <div class="stat-label">DINNERS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{Object.keys(cuisineCounts).length}</div>
+        <div class="stat-label">CUISINES</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{Object.keys(hoodCounts).length}</div>
+        <div class="stat-label">NEIGHBORHOODS</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{avgRating.toFixed(1)}</div>
+        <div class="stat-label">AVG RATING</div>
+      </div>
+    </div>
+
+    <hr class="brass-rule" />
+
+    <!-- Fun facts -->
+    <div class="facts">
+      {topCuisine && (
+        <div class="fact">
+          <div class="fact-label">MOST VISITED CUISINE</div>
+          <div class="fact-value">{topCuisine[0]}</div>
+          <div class="fact-sub">{topCuisine[1]} {topCuisine[1] === 1 ? 'dinner' : 'dinners'}</div>
+        </div>
+      )}
+      {topHood && (
+        <div class="fact">
+          <div class="fact-label">MOST VISITED NEIGHBORHOOD</div>
+          <div class="fact-value">{topHood[0]}</div>
+          <div class="fact-sub">{topHood[1]} {topHood[1] === 1 ? 'visit' : 'visits'}</div>
+        </div>
+      )}
+      {streak > 1 && (
+        <div class="fact">
+          <div class="fact-label">LONGEST STREAK</div>
+          <div class="fact-value">{streak}</div>
+          <div class="fact-sub">consecutive months</div>
+        </div>
+      )}
+      {wishlistHoods.length > 0 && (
+        <div class="fact">
+          <div class="fact-label">UNEXPLORED</div>
+          <div class="fact-value">{wishlistHoods.length}</div>
+          <div class="fact-sub">{wishlistHoods.length === 1 ? 'neighborhood' : 'neighborhoods'} on the wishlist</div>
+        </div>
+      )}
+    </div>
+
+    <hr class="brass-rule" />
+
+    <!-- Dinners per year chart -->
+    <section class="chart-section">
+      <h2 class="section-title">DINNERS BY YEAR</h2>
+      <div class="bar-chart">
+        {years.map(([year, count]) => (
+          <div class="bar-row">
+            <div class="bar-year">{year}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style={`width: ${(count / maxPerYear) * 100}%`}></div>
+            </div>
+            <div class="bar-count">{count}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <hr class="brass-rule" />
+
+    <!-- Cuisine breakdown -->
+    <section class="chart-section">
+      <h2 class="section-title">CUISINES</h2>
+      <div class="bar-chart">
+        {cuisineRanked.map(([cuisine, count]) => (
+          <div class="bar-row">
+            <div class="bar-year bar-year--wide">{cuisine}</div>
+            <div class="bar-track">
+              <div class="bar-fill" style={`width: ${(count / (topCuisine?.[1] ?? 1)) * 100}%`}></div>
+            </div>
+            <div class="bar-count">{count}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <hr class="brass-rule" />
+
+    <!-- Map -->
+    <section class="chart-section">
+      <h2 class="section-title">ON THE MAP</h2>
+      <StatsMap pins={pins} />
+    </section>
+
+    <!-- Unexplored wishlist neighborhoods -->
+    {wishlistHoods.length > 0 && (
+      <>
+        <hr class="brass-rule" />
+        <section class="chart-section">
+          <h2 class="section-title">TERRITORY YET UNEXPLORED</h2>
+          <p class="unexplored-list">
+            {wishlistHoods.join(' · ')}
+          </p>
+        </section>
+      </>
+    )}
+
+  </main>
+</Base>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .page-header { margin-bottom: clamp(24px, 3.5vh, 40px); }
+  .page-title {
+    margin: 0 0 8px;
+    font-family: var(--serif-display);
+    font-size: clamp(22px, 3.5vw, 40px);
+    letter-spacing: 0.14em;
+    color: var(--brass-hi);
+    font-weight: 600;
+  }
+  .page-subtitle {
+    margin: 0;
+    font-style: italic;
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--brass-lo);
+  }
+
+  /* Headline numbers */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-bottom: 0;
+  }
+  .stat-card {
+    border: 1px solid var(--brass-faint);
+    padding: clamp(16px, 2.5vw, 28px) 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+  }
+  .stat-value {
+    font-family: var(--serif-display);
+    font-size: clamp(28px, 4.5vw, 52px);
+    color: var(--brass-hi);
+    font-weight: 400;
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.45em;
+    color: var(--brass-lo);
+    padding-left: 0.45em;
+  }
+
+  /* Fun facts */
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    margin-bottom: 0;
+  }
+  .fact { display: flex; flex-direction: column; gap: 4px; }
+  .fact-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    padding-left: 0.4em;
+  }
+  .fact-value {
+    font-family: var(--serif-display);
+    font-size: clamp(18px, 2.5vw, 28px);
+    color: var(--brass-hi);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  .fact-sub {
+    font-style: italic;
+    font-size: clamp(13px, 1.3vw, 15px);
+    color: var(--brass-lo);
+  }
+
+  /* Chart sections */
+  .chart-section { display: flex; flex-direction: column; gap: clamp(12px, 2vh, 20px); }
+  .section-title {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-size: clamp(10px, 1.1vw, 13px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    font-weight: 400;
+    padding-left: 0.4em;
+  }
+
+  /* Bar charts */
+  .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 12px; }
+  .bar-year {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.2em;
+    color: var(--brass-lo);
+    width: 48px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .bar-year--wide { width: 160px; text-align: right; }
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--brass-faint);
+    min-width: 0;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--brass);
+    transition: width 0.6s ease-out;
+    min-width: 4px;
+  }
+  .bar-count {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    color: var(--brass-lo);
+    width: 20px;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 520px) {
+    .bar-year--wide { width: 120px; font-size: 9px; }
+  }
+
+  .unexplored-list {
+    margin: 0;
+    font-style: italic;
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--brass-lo);
+    line-height: 1.7;
+  }
+</style>

@@ -1,0 +1,56 @@
+[
+  {
+    "slug": "la-costanera",
+    "name": "La Costanera",
+    "cuisine": "Peruvian Coastal",
+    "neighborhood": "Montara",
+    "price_range": 3,
+    "added_by": "Jessie",
+    "notes": "Cliffside views of the Pacific. Ceviche and pisco sours on the agenda."
+  },
+  {
+    "slug": "plumed-horse",
+    "name": "Plumed Horse",
+    "cuisine": "Contemporary American",
+    "neighborhood": "Saratoga",
+    "price_range": 4,
+    "added_by": "Jessie",
+    "notes": "One Michelin star in a charming Saratoga village setting. Long overdue."
+  },
+  {
+    "slug": "the-sea-alexanders",
+    "name": "The Sea by Alexander's Steakhouse",
+    "cuisine": "Seafood",
+    "neighborhood": "Burlingame",
+    "price_range": 4,
+    "added_by": "Jessie",
+    "notes": "Seafood-forward spin-off of the Alexander's empire. Omakase on request."
+  },
+  {
+    "slug": "flea-street",
+    "name": "Flea St. Café",
+    "cuisine": "California Organic",
+    "neighborhood": "Menlo Park",
+    "price_range": 3,
+    "added_by": "Jessie",
+    "notes": "Farm-to-table pioneer since 1980. The kind of place that earned that reputation."
+  },
+  {
+    "slug": "domo-sushi",
+    "name": "DOMO Sushi",
+    "cuisine": "Japanese",
+    "neighborhood": "Redwood City",
+    "price_range": 3,
+    "added_by": "Jessie",
+    "notes": "Chef-driven omakase in a quiet strip mall. The best surprises come in humble packaging."
+  },
+  {
+    "slug": "la-viga",
+    "name": "La Viga",
+    "cuisine": "Mexican Coastal",
+    "neighborhood": "Redwood City",
+    "price_range": 2,
+    "added_by": "Jessie",
+    "notes": "Mariscos and mezcal. A change of pace from the tasting-menu circuit."
+  }
+]

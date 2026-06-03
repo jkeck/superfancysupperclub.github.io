@@ -1,0 +1,93 @@
+[
+  {
+    "slug": "protege-2025-04",
+    "name": "Protégé",
+    "date": "2025-04-19",
+    "cuisine": "Contemporary French",
+    "neighborhood": "Palo Alto",
+    "lat": 37.4416,
+    "lng": -122.1430,
+    "price_range": 4,
+    "rating": 5,
+    "notes": "A revelatory tasting menu in an understated room. The duck with cherry jus may haunt us forever.",
+    "photos": []
+  },
+  {
+    "slug": "village-pub-2025-06",
+    "name": "The Village Pub",
+    "date": "2025-06-14",
+    "cuisine": "American",
+    "neighborhood": "Woodside",
+    "lat": 37.4209,
+    "lng": -122.2536,
+    "price_range": 3,
+    "rating": 4,
+    "notes": "A Woodside institution with impeccable service. The burger is an insult to how good everything else is.",
+    "photos": []
+  },
+  {
+    "slug": "evvia-2025-08",
+    "name": "Evvia",
+    "date": "2025-08-09",
+    "cuisine": "Greek",
+    "neighborhood": "Palo Alto",
+    "lat": 37.4441,
+    "lng": -122.1556,
+    "price_range": 3,
+    "rating": 4,
+    "notes": "Wood-fired everything. The lamb chops were exactly what summer called for.",
+    "photos": []
+  },
+  {
+    "slug": "madera-2025-10",
+    "name": "Madera",
+    "date": "2025-10-04",
+    "cuisine": "Californian",
+    "neighborhood": "Menlo Park",
+    "lat": 37.4530,
+    "lng": -122.1817,
+    "price_range": 3,
+    "rating": 5,
+    "notes": "Rosewood hotel dining done right. The wine list deserved its own evening.",
+    "photos": []
+  },
+  {
+    "slug": "chez-tj-2025-12",
+    "name": "Chez TJ",
+    "date": "2025-12-13",
+    "cuisine": "French",
+    "neighborhood": "Mountain View",
+    "lat": 37.3895,
+    "lng": -122.0816,
+    "price_range": 4,
+    "rating": 4,
+    "notes": "Victorian house, Michelin star, and a truffle course that made everyone go quiet.",
+    "photos": []
+  },
+  {
+    "slug": "navio-2026-02",
+    "name": "Navio",
+    "date": "2026-02-28",
+    "cuisine": "Coastal American",
+    "neighborhood": "Half Moon Bay",
+    "lat": 37.4638,
+    "lng": -122.4286,
+    "price_range": 4,
+    "rating": 5,
+    "notes": "Cliffs, fog, and the best Dungeness crab bisque anyone at the table had ever tasted.",
+    "photos": []
+  },
+  {
+    "slug": "selby-2026-04",
+    "name": "Selby's",
+    "date": "2026-04-25",
+    "cuisine": "Contemporary American",
+    "neighborhood": "Atherton",
+    "lat": 37.4542,
+    "lng": -122.1931,
+    "price_range": 4,
+    "rating": 4,
+    "notes": "Elegant, confident cooking. The wagyu tartare with black truffle was the opening move of a very good evening.",
+    "photos": []
+  }
+]

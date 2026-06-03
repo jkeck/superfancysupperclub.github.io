@@ -1,0 +1,124 @@
+---
+import Base from '../layouts/Base.astro';
+import Countdown from '../components/Countdown.astro';
+import upcoming from '../data/upcoming.json';
+
+const eventDate = new Date(upcoming.date);
+const fmtFull = (d: Date) =>
+  d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const fmtTime = (d: Date) =>
+  d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+---
+
+<Base title="Upcoming · Super Fancy Supper Club" activeNav="upcoming">
+  <main>
+
+    <header class="page-header">
+      <div class="page-eyebrow">NEXT GATHERING</div>
+      <h1 class="restaurant-name">
+        {upcoming.secret ? 'TO BE ANNOUNCED' : upcoming.name}
+      </h1>
+      {!upcoming.secret && upcoming.neighborhood && (
+        <div class="restaurant-location">{upcoming.neighborhood}</div>
+      )}
+    </header>
+
+    <Countdown date={upcoming.date} />
+
+    <div class="event-details">
+      <div class="event-date">
+        {fmtFull(eventDate)}&ensp;·&ensp;{fmtTime(eventDate)}
+      </div>
+      {upcoming.teaser && (
+        <p class="event-teaser">{upcoming.teaser}</p>
+      )}
+    </div>
+
+    {upcoming.ics_url && (
+      <a href={upcoming.ics_url} download class="cal-button">
+        ADD TO CALENDAR
+      </a>
+    )}
+
+  </main>
+</Base>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: clamp(24px, 4vh, 44px);
+    padding: clamp(16px, 3vh, 32px) 0;
+  }
+
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .page-eyebrow {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.5em;
+    color: var(--brass-lo);
+    padding-left: 0.5em;
+  }
+  .restaurant-name {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-size: clamp(28px, 6vw, 64px);
+    letter-spacing: 0.08em;
+    color: var(--brass-hi);
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .restaurant-location {
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(15px, 1.6vw, 20px);
+    color: var(--brass-lo);
+  }
+
+  .event-details {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .event-date {
+    font-family: var(--serif-display);
+    font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.2em;
+    color: var(--brass);
+  }
+  .event-teaser {
+    margin: 0;
+    font-style: italic;
+    font-size: clamp(16px, 1.8vw, 21px);
+    color: #b8975a;
+    max-width: 48ch;
+    line-height: 1.5;
+  }
+
+  .cal-button {
+    display: inline-block;
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.45em;
+    color: var(--brass);
+    border: 1px solid var(--brass-lo);
+    padding: 12px 28px 12px 32px;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .cal-button:hover {
+    border-color: var(--brass);
+    color: var(--brass-hi);
+  }
+</style>

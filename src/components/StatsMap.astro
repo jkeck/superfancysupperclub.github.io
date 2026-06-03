@@ -1,0 +1,147 @@
+---
+interface Pin {
+  name: string;
+  date: string;
+  neighborhood: string;
+  rating: number;
+  lat: number;
+  lng: number;
+}
+
+interface Props {
+  pins: Pin[];
+}
+
+const { pins } = Astro.props;
+---
+
+<div class="map-wrap">
+  <div id="stats-map" data-pins={JSON.stringify(pins)}></div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+  async function initMap() {
+    const mapEl = document.getElementById('stats-map') as HTMLElement;
+    if (!mapEl) return;
+
+    const pins = JSON.parse(mapEl.dataset.pins ?? '[]') as Array<{
+      name: string; date: string; neighborhood: string; rating: number; lat: number; lng: number;
+    }>;
+
+    // Load Leaflet JS from CDN
+    await new Promise<void>((resolve, reject) => {
+      if ((window as any).L) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      s.onload = () => resolve();
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+
+    const L = (window as any).L;
+
+    const map = L.map('stats-map', {
+      center: [37.44, -122.18],
+      zoom: 11,
+      zoomControl: true,
+    });
+
+    // CartoDB Dark Matter tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20,
+    }).addTo(map);
+
+    // Brass marker icon
+    const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+      <circle cx="10" cy="10" r="8" fill="#c9a767" stroke="#061812" stroke-width="2"/>
+      <circle cx="10" cy="10" r="3" fill="#061812"/>
+    </svg>`;
+    const markerIcon = L.divIcon({
+      html: markerSvg,
+      className: '',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+    const fmtDate = (d: string) =>
+      new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const diamonds = (n: number) => '◆'.repeat(n) + '◇'.repeat(5 - n);
+
+    pins.forEach(pin => {
+      L.marker([pin.lat, pin.lng], { icon: markerIcon })
+        .addTo(map)
+        .bindPopup(`
+          <div class="map-popup">
+            <strong>${pin.name}</strong>
+            <div>${fmtDate(pin.date)}</div>
+            <div>${pin.neighborhood}</div>
+            <div class="map-rating">${diamonds(pin.rating)}</div>
+          </div>
+        `);
+    });
+  }
+
+  initMap();
+</script>
+
+<style>
+  .map-wrap {
+    border: 1px solid var(--brass-faint);
+    overflow: hidden;
+  }
+  #stats-map {
+    height: clamp(280px, 40vh, 480px);
+    width: 100%;
+    background: var(--green-deep);
+  }
+
+  /* Override Leaflet popup styles to match the aesthetic */
+  :global(.leaflet-popup-content-wrapper) {
+    background: var(--green) !important;
+    border: 1px solid var(--brass-lo) !important;
+    border-radius: 0 !important;
+    color: var(--brass-hi) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+  }
+  :global(.leaflet-popup-tip) {
+    background: var(--brass-lo) !important;
+  }
+  :global(.leaflet-popup-close-button) {
+    color: var(--brass-lo) !important;
+  }
+  :global(.map-popup) {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--brass-hi);
+  }
+  :global(.map-popup strong) {
+    font-family: "Cinzel", serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  :global(.map-popup .map-rating) {
+    letter-spacing: 0.15em;
+    color: var(--brass);
+    margin-top: 2px;
+  }
+  :global(.leaflet-control-zoom a) {
+    background: var(--green) !important;
+    color: var(--brass) !important;
+    border-color: var(--brass-faint) !important;
+  }
+  :global(.leaflet-control-attribution) {
+    background: rgba(6,24,18,0.7) !important;
+    color: var(--brass-faint) !important;
+    font-size: 10px !important;
+  }
+  :global(.leaflet-control-attribution a) {
+    color: var(--brass-lo) !important;
+  }
+</style>

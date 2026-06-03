@@ -1,0 +1,142 @@
+/* ── Tokens ─────────────────────────────────────────────────── */
+:root {
+  --green-deep:  #061812;
+  --green:       #0e2419;
+  --green-mid:   #163022;
+  --green-soft:  #1d3d2c;
+  --brass:       #c9a767;
+  --brass-hi:    #e7d09a;
+  --brass-lo:    #8a6f2e;
+  --brass-faint: #5a4818;
+
+  --serif-display: "Cinzel", serif;
+  --serif-italic:  "Italiana", serif;
+  --serif-body:    "Cormorant Garamond", serif;
+
+  --frame-inset: clamp(14px, 2.5vw, 36px);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { background: var(--green-deep); }
+
+body {
+  min-height: 100vh;
+  color: var(--brass-hi);
+  font-family: var(--serif-body);
+  font-size: 18px;
+  line-height: 1.55;
+  background:
+    radial-gradient(ellipse at 50% 28%, var(--green-mid) 0%, var(--green) 55%, var(--green-deep) 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* damask dot field */
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image:
+    radial-gradient(circle at 20px 20px, var(--brass) 1.2px, transparent 1.5px),
+    radial-gradient(circle at 60px 60px, var(--brass) 0.6px, transparent 1px);
+  background-size: 80px 80px;
+  z-index: 0;
+}
+
+/* vignette */
+body::after {
+  content: "";
+  position: fixed; inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.55) 100%);
+  z-index: 0;
+}
+
+/* ── Art Deco hairline frame ───────────────────────────────── */
+.frame {
+  position: fixed;
+  inset: var(--frame-inset);
+  margin: -10px;
+  border: 1px solid var(--brass);
+  pointer-events: none;
+  z-index: 2;
+}
+.frame::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--brass-lo);
+}
+.frame .corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: var(--brass);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0 3px var(--green);
+}
+.frame .corner.tl { top: -7px; left: -7px; }
+.frame .corner.tr { top: -7px; right: -7px; }
+.frame .corner.bl { bottom: -7px; left: -7px; }
+.frame .corner.br { bottom: -7px; right: -7px; }
+
+@media (max-width: 480px) {
+  .frame .corner { width: 10px; height: 10px; box-shadow: 0 0 0 2px var(--green); }
+  .frame .corner.tl, .frame .corner.tr { top: -5px; }
+  .frame .corner.bl, .frame .corner.br { bottom: -5px; }
+  .frame .corner.tl, .frame .corner.bl { left: -5px; }
+  .frame .corner.tr, .frame .corner.br { right: -5px; }
+}
+
+/* ── Page scroll container ─────────────────────────────────── */
+.page {
+  position: fixed;
+  inset: var(--frame-inset);
+  overflow-y: auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding:
+    clamp(28px, 4vh, 52px)
+    clamp(28px, 6vw, 96px)
+    clamp(28px, 4vh, 52px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass-faint) transparent;
+}
+
+/* ── Footer ────────────────────────────────────────────────── */
+footer {
+  text-align: center;
+  font-family: var(--serif-display);
+  font-size: clamp(9px, 1vw, 11px);
+  letter-spacing: 0.42em;
+  color: var(--brass-lo);
+  padding-left: 0.42em;
+  margin-top: auto;
+  padding-top: clamp(20px, 3vh, 36px);
+}
+footer .sep { margin: 0 0.6em; }
+
+/* ── Divider rule ──────────────────────────────────────────── */
+.brass-rule {
+  border: none;
+  border-top: 1px solid var(--brass-faint);
+  margin: clamp(24px, 3.5vh, 40px) 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .page {
+    padding-left: clamp(16px, 5vw, 28px);
+    padding-right: clamp(16px, 5vw, 28px);
+  }
+  footer { letter-spacing: 0.3em; font-size: 9px; line-height: 1.9; }
+  footer .sep { display: inline-block; margin: 0 0.4em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

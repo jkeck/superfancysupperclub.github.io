@@ -1,0 +1,14 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Super Fancy Supper Club//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTART:20260718T193000
+DTEND:20260718T220000
+SUMMARY:Super Fancy Supper Club · Baumé
+LOCATION:201 University Ave, Palo Alto, CA 94301
+DESCRIPTION:Two Michelin stars. A long time coming.\n\nSee you there.
+URL:https://superfancysupperclub.com/upcoming
+END:VEVENT
+END:VCALENDAR

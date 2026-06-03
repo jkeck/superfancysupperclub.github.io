@@ -1,0 +1,381 @@
+---
+interface WishlistItem {
+  slug: string;
+  name: string;
+  cuisine: string;
+  neighborhood: string;
+  price_range: number;
+  added_by?: string;
+  notes?: string;
+  session?: boolean;
+}
+
+interface Props {
+  baseList: WishlistItem[];
+}
+
+const { baseList } = Astro.props;
+
+const diamonds = (filled: number, total = 4) =>
+  '◆'.repeat(filled) + '◇'.repeat(total - filled);
+---
+
+<div class="wishlist-root">
+
+  <!-- Controls -->
+  <div class="wishlist-controls">
+    <button id="draw-btn" class="draw-btn" disabled>DRAW THE LOT</button>
+    <form id="add-form" class="add-form" autocomplete="off">
+      <input id="add-name" type="text" placeholder="Add a restaurant…" class="add-input" maxlength="80" />
+      <input id="add-cuisine" type="text" placeholder="Cuisine (optional)" class="add-input add-input--sm" maxlength="40" />
+      <input id="add-hood" type="text" placeholder="Neighborhood (optional)" class="add-input add-input--sm" maxlength="40" />
+      <button type="submit" class="add-btn">ADD</button>
+    </form>
+  </div>
+
+  <!-- Card list — server-rendered base, client appends session items -->
+  <div id="wishlist-cards" class="wishlist-cards">
+    {baseList.map(item => (
+      <article class="wish-card" data-name={item.name}>
+        <div class="wish-card-header">
+          <h2 class="wish-name">{item.name}</h2>
+          <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>{diamonds(item.price_range)}</span>
+        </div>
+        <div class="wish-meta">
+          {item.cuisine && <span>{item.cuisine}</span>}
+          {item.cuisine && item.neighborhood && <span class="sep">·</span>}
+          {item.neighborhood && <span>{item.neighborhood}</span>}
+          {item.added_by && <><span class="sep">·</span><span class="wish-added">added by {item.added_by}</span></>}
+        </div>
+        {item.notes && <p class="wish-notes">{item.notes}</p>}
+      </article>
+    ))}
+  </div>
+
+  <!-- Picker modal -->
+  <div id="picker-modal" class="picker-modal" role="dialog" aria-modal="true" aria-label="Restaurant draw" hidden>
+    <div class="picker-inner">
+      <div class="picker-eyebrow">THE DRAW</div>
+      <div id="picker-display" class="picker-display" aria-live="polite">—</div>
+      <div class="picker-actions">
+        <button id="draw-again-btn" class="picker-btn picker-btn--secondary">DRAW AGAIN</button>
+        <button id="close-modal-btn" class="picker-btn picker-btn--primary">CLOSE</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  interface Item { name: string; }
+
+  // Collect names from server-rendered + dynamically added cards
+  function getNames(): string[] {
+    return Array.from(document.querySelectorAll<HTMLElement>('#wishlist-cards .wish-card'))
+      .map(el => el.dataset.name ?? '')
+      .filter(Boolean);
+  }
+
+  const cardsEl   = document.getElementById('wishlist-cards')!;
+  const modal     = document.getElementById('picker-modal')!;
+  const display   = document.getElementById('picker-display')!;
+  const drawBtn   = document.getElementById('draw-btn') as HTMLButtonElement;
+  const addForm   = document.getElementById('add-form') as HTMLFormElement;
+  const nameInput = document.getElementById('add-name') as HTMLInputElement;
+  const cuisineInput = document.getElementById('add-cuisine') as HTMLInputElement;
+  const hoodInput = document.getElementById('add-hood') as HTMLInputElement;
+
+  // Enable draw button once we have items
+  function syncDrawBtn() {
+    drawBtn.disabled = getNames().length === 0;
+  }
+  syncDrawBtn();
+
+  // --- Add form ---
+  addForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = nameInput.value.trim();
+    if (!name) return;
+    const cuisine = cuisineInput.value.trim();
+    const hood = hoodInput.value.trim();
+
+    const card = document.createElement('article');
+    card.className = 'wish-card wish-card--session';
+    card.dataset.name = name;
+    card.innerHTML = `
+      <div class="wish-card-header">
+        <h2 class="wish-name">${escHtml(name)}</h2>
+        <span class="wish-session-badge">THIS SESSION</span>
+      </div>
+      ${cuisine || hood ? `<div class="wish-meta">${[cuisine, hood].filter(Boolean).map(escHtml).join('<span class="sep">·</span>')}</div>` : ''}
+    `;
+    cardsEl.appendChild(card);
+    nameInput.value = '';
+    cuisineInput.value = '';
+    hoodInput.value = '';
+    nameInput.focus();
+    syncDrawBtn();
+  });
+
+  // --- Picker ---
+  let animFrame = 0;
+
+  function runDraw() {
+    const names = getNames();
+    if (!names.length) return;
+
+    modal.hidden = false;
+    document.getElementById('draw-again-btn')!.style.display = 'none';
+
+    const winner = names[Math.floor(Math.random() * names.length)];
+    let elapsed = 0;
+    const duration = 2800;
+    const start = performance.now();
+
+    function animate(now: number) {
+      elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 4);
+      const interval = 40 + eased * 340;
+
+      if (elapsed < duration) {
+        display.textContent = names[Math.floor(Math.random() * names.length)];
+        animFrame = window.setTimeout(() => requestAnimationFrame(animate), interval);
+      } else {
+        display.textContent = winner;
+        document.getElementById('draw-again-btn')!.style.display = '';
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  drawBtn.addEventListener('click', runDraw);
+  document.getElementById('draw-again-btn')!.addEventListener('click', runDraw);
+  document.getElementById('close-modal-btn')!.addEventListener('click', () => {
+    clearTimeout(animFrame);
+    modal.hidden = true;
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      clearTimeout(animFrame);
+      modal.hidden = true;
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.hidden) {
+      clearTimeout(animFrame);
+      modal.hidden = true;
+    }
+  });
+
+  function escHtml(s: string) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+
+<style>
+  .wishlist-root { display: flex; flex-direction: column; gap: clamp(24px, 3.5vh, 40px); }
+
+  /* Controls */
+  .wishlist-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: clamp(16px, 2.5vh, 28px);
+    border-bottom: 1px solid var(--brass-faint);
+  }
+
+  .draw-btn {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.45em;
+    padding: 12px 28px 12px 32px;
+    background: transparent;
+    border: 1px solid var(--brass);
+    color: var(--brass-hi);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .draw-btn:hover:not(:disabled) { background: rgba(201,167,103,0.08); }
+  .draw-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .add-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .add-input {
+    font-family: var(--serif-body);
+    font-size: 15px;
+    font-style: italic;
+    background: transparent;
+    border: 1px solid var(--brass-faint);
+    color: var(--brass-hi);
+    padding: 8px 12px;
+    outline: none;
+    flex: 1;
+    min-width: 140px;
+    transition: border-color 0.15s;
+  }
+  .add-input::placeholder { color: var(--brass-faint); }
+  .add-input:focus { border-color: var(--brass-lo); }
+  .add-input--sm { flex: 0.6; min-width: 110px; }
+
+  .add-btn {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.9vw, 10px);
+    letter-spacing: 0.4em;
+    padding: 8px 18px 8px 22px;
+    background: transparent;
+    border: 1px solid var(--brass-faint);
+    color: var(--brass-lo);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { border-color: var(--brass-lo); color: var(--brass-hi); }
+
+  /* Cards */
+  .wishlist-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: clamp(16px, 2.5vw, 28px);
+  }
+  .wish-card {
+    border: 1px solid var(--brass-faint);
+    padding: clamp(16px, 2vw, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.2s;
+  }
+  .wish-card:hover { border-color: var(--brass-lo); }
+  .wish-card--session { border-style: dashed; }
+
+  .wish-card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .wish-name {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-size: clamp(14px, 1.5vw, 18px);
+    letter-spacing: 0.06em;
+    color: var(--brass-hi);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .wish-price {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--brass-lo);
+    flex-shrink: 0;
+  }
+  .wish-session-badge {
+    font-family: var(--serif-display);
+    font-size: 8px;
+    letter-spacing: 0.35em;
+    color: var(--brass-faint);
+    flex-shrink: 0;
+  }
+  .wish-meta {
+    font-size: clamp(12px, 1.2vw, 14px);
+    color: var(--brass-lo);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .sep { margin: 0 0.4em; color: var(--brass-faint); }
+  .wish-added { font-style: italic; }
+  .wish-notes {
+    margin: 4px 0 0;
+    font-style: italic;
+    font-size: clamp(13px, 1.25vw, 15px);
+    color: #8a6f2e;
+    line-height: 1.5;
+  }
+
+  /* Picker modal */
+  .picker-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    background: rgba(6,24,18,0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+  }
+  .picker-modal[hidden] { display: none; }
+
+  .picker-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(20px, 3vh, 36px);
+    padding: clamp(32px, 5vw, 72px);
+    border: 1px solid var(--brass);
+    background: var(--green);
+    max-width: min(90vw, 560px);
+    width: 100%;
+    position: relative;
+  }
+  .picker-inner::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--brass-faint);
+    pointer-events: none;
+  }
+
+  .picker-eyebrow {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.5em;
+    color: var(--brass-lo);
+    padding-left: 0.5em;
+  }
+  .picker-display {
+    font-family: var(--serif-display);
+    font-size: clamp(22px, 4vw, 42px);
+    letter-spacing: 0.06em;
+    color: var(--brass-hi);
+    font-weight: 500;
+    text-align: center;
+    min-height: 1.3em;
+    line-height: 1.3;
+  }
+
+  .picker-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .picker-btn {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.9vw, 10px);
+    letter-spacing: 0.4em;
+    padding: 10px 24px 10px 28px;
+    background: transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .picker-btn--primary {
+    border: 1px solid var(--brass-lo);
+    color: var(--brass);
+  }
+  .picker-btn--primary:hover { border-color: var(--brass); color: var(--brass-hi); }
+  .picker-btn--secondary {
+    border: 1px solid var(--brass-faint);
+    color: var(--brass-lo);
+  }
+  .picker-btn--secondary:hover { border-color: var(--brass-lo); color: var(--brass); }
+</style>
