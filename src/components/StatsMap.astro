@@ -79,7 +79,7 @@ const { pins } = Astro.props;
             <strong>${pin.name}</strong>
             <div>${fmtDate(pin.date)}</div>
             <div>${pin.neighborhood}</div>
-            <div class="map-rating">${diamonds(pin.rating)}</div>
+            <div class="map-rating">★ ${diamonds(pin.rating)}</div>
           </div>
         `);
     });

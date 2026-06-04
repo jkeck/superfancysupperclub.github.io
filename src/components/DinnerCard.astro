@@ -26,11 +26,11 @@ const diamonds = (filled: number, total = 4) =>
     <span class="sep">·</span>
     <span class="dinner-neighborhood">{neighborhood}</span>
     <span class="sep">·</span>
-    <span class="dinner-price" title={`Price range: ${price_range} of 4`}>{diamonds(price_range)}</span>
+    <span class="dinner-rating" title={`Rating: ${rating} of 5`}>★ {diamonds(rating, 5)}</span>
+    <span class="sep">·</span>
+    <span class="dinner-price" title={`Price range: ${price_range} of 4`}>$ {diamonds(price_range)}</span>
   </div>
-  <div class="dinner-rating" title={`Rating: ${rating} of 5`}>
-    {diamonds(rating, 5)}
-  </div>
+
   {notes && <p class="dinner-notes">{notes}</p>}
 </article>
 
