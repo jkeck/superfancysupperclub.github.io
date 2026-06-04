@@ -1,8 +1,8 @@
 {
-  "name": "Baumé",
-  "date": "2026-07-18T19:30:00",
-  "teaser": "Two Michelin stars. A long time coming.",
+  "name": "Stella",
+  "date": "2026-06-14T19:00:00",
+  "teaser": "It may not be Vespucci, but we will be the judge",
   "secret": false,
-  "neighborhood": "Palo Alto",
-  "ics_url": "/events/baume-2026-07.ics"
+  "neighborhood": "Burlingame",
+  "ics_url": "/events/stella-2026-06.ics"
 }

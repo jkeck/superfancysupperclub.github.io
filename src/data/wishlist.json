@@ -1,56 +1,47 @@
 [
   {
-    "slug": "la-costanera",
-    "name": "La Costanera",
-    "cuisine": "Peruvian Coastal",
-    "neighborhood": "Montara",
-    "price_range": 3,
-    "added_by": "Jessie",
-    "notes": "Cliffside views of the Pacific. Ceviche and pisco sours on the agenda."
-  },
-  {
-    "slug": "plumed-horse",
-    "name": "Plumed Horse",
-    "cuisine": "Contemporary American",
-    "neighborhood": "Saratoga",
+    "slug": "selbys",
+    "name": "Selby's",
+    "cuisine": "American",
+    "neighborhood": "Atherton",
     "price_range": 4,
     "added_by": "Jessie",
-    "notes": "One Michelin star in a charming Saratoga village setting. Long overdue."
+    "notes": "A 1-star Michelin restaurant serving classic American continental cuisine"
   },
   {
-    "slug": "the-sea-alexanders",
-    "name": "The Sea by Alexander's Steakhouse",
-    "cuisine": "Seafood",
-    "neighborhood": "Burlingame",
+    "slug": "mistral",
+    "name": "Mistral",
+    "cuisine": "American",
+    "neighborhood": "Redwood Shores",
+    "price_range": 3,
+    "added_by": "Jessie",
+    "notes": "A waterfront restaurant & bar located in Redwood Shores for 25 years."
+  },
+  {
+    "slug": "village-pub",
+    "name": "The Village Pub",
+    "cuisine": "American",
+    "neighborhood": "Woodside",
     "price_range": 4,
     "added_by": "Jessie",
-    "notes": "Seafood-forward spin-off of the Alexander's empire. Omakase on request."
+    "notes": "High-end American eatery drawing a well-heeled clientele with gourmet seasonal fare & fine wines."
   },
   {
-    "slug": "flea-street",
-    "name": "Flea St. Café",
-    "cuisine": "California Organic",
-    "neighborhood": "Menlo Park",
-    "price_range": 3,
+    "slug": "all-spice",
+    "name": "All Spice",
+    "cuisine": "Californian",
+    "neighborhood": "San Mateo",
+    "price_range": 4,
     "added_by": "Jessie",
-    "notes": "Farm-to-table pioneer since 1980. The kind of place that earned that reputation."
+    "notes": "An oft-changing 3, 4 or 5-course Chef's Menu of creative, Modern Californian cuisine inside our charming cottage."
   },
   {
-    "slug": "domo-sushi",
-    "name": "DOMO Sushi",
-    "cuisine": "Japanese",
+    "slug": "hurrica",
+    "name": "Hurrica",
+    "cuisine": "Californian",
     "neighborhood": "Redwood City",
-    "price_range": 3,
-    "added_by": "Jessie",
-    "notes": "Chef-driven omakase in a quiet strip mall. The best surprises come in humble packaging."
-  },
-  {
-    "slug": "la-viga",
-    "name": "La Viga",
-    "cuisine": "Mexican Coastal",
-    "neighborhood": "Redwood City",
-    "price_range": 2,
-    "added_by": "Jessie",
-    "notes": "Mariscos and mezcal. A change of pace from the tasting-menu circuit."
+    "price_range": 4,
+    "added_by": "Davide",
+    "notes": "Beautiful restaurant featuring hearth-fired seasonal eats, a full bar and harbor views."
   }
 ]
