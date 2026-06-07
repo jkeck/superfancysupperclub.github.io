@@ -11,6 +11,7 @@ Record the completed upcoming dinner in the historical dinners list.
    - **Cuisine** — search for it or infer from context; ask if uncertain
    - **Price range** — integer 1–4; search for it or infer from context; ask if uncertain
    - **Lat/Lng** — attempt to look up from the restaurant name and neighborhood via web search; if uncertain ask the user to confirm or provide them
+   - **Website** — carry over from `upcoming.json` if present; otherwise search for it
    - **Photos** — list of photo URLs (default: `[]`; user can add later)
    - **Notes** — one or two sentence description (can reuse any existing notes from context, or ask)
 
@@ -32,8 +33,10 @@ Record the completed upcoming dinner in the historical dinners list.
      "price_range": 3,
      "rating": 4,
      "notes": "Short description.",
+     "website": "https://example.com",
      "photos": []
    }
    ```
+   Omit `website` if unknown (don't use an empty string).
 
 6. Confirm: show the entry added to dinners.json.

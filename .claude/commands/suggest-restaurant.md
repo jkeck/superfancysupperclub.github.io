@@ -18,6 +18,7 @@ Proactively find and suggest a new restaurant to add to the wishlist, based on t
    - Fits the inferred cuisine style, neighborhood pattern, and price range
    - Is **not** already in any of the three lists (check by name and slug)
    - Is clearly still open and active (verify via a recent review, Google listing, or the restaurant's own site)
+   - While searching, also note the restaurant's website URL and which days of the week it is closed (for `closed_days`)
 
 4. Present the suggestion to the user in this format:
    - **Name**
@@ -43,9 +44,12 @@ Proactively find and suggest a new restaurant to add to the wishlist, based on t
        "neighborhood": "Neighborhood",
        "price_range": 3,
        "added_by": "Jessie",
-       "notes": "Short description."
+       "notes": "Short description.",
+       "website": "https://example.com",
+       "closed_days": [0, 1]
      }
      ```
+     Omit `website` if not found. Omit `closed_days` or use `[]` if hours are unknown.
    - Confirm what was added and show the final entry.
 
    **If no / wants a different suggestion:**

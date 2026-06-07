@@ -11,6 +11,8 @@ Add a new restaurant entry to `src/data/wishlist.json`.
    - **Price range** — integer 1–4 ($ to $$$$)
    - **Added by** — who is recommending it (default: "Jessie")
    - **Notes** — one or two sentence description of the restaurant
+   - **Website** — the restaurant's website URL (optional; use web search to find it if not provided)
+   - **Closed days** — days of the week the restaurant is closed, as an array of integers where 0=Sunday, 1=Monday … 6=Saturday (optional; use web search to find hours if not provided; default: `[]`)
 
    Collect all missing required fields before proceeding. Prompt for optional fields if not provided.
 
@@ -31,8 +33,11 @@ Add a new restaurant entry to `src/data/wishlist.json`.
      "neighborhood": "Neighborhood",
      "price_range": 3,
      "added_by": "Name",
-     "notes": "Short description."
+     "notes": "Short description.",
+     "website": "https://example.com",
+     "closed_days": [0, 1]
    }
    ```
+   Omit `website` if unknown (don't use an empty string). Omit `closed_days` or use `[]` if unknown.
 
 6. Confirm what was added and show the final entry.
