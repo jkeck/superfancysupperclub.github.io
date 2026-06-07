@@ -10,6 +10,7 @@
     "price_range": 2,
     "rating": 4,
     "notes": "Mediterranean-inspired small plates & wine offered in an intimate space with funky decor.",
+    "website": "https://www.yelp.com/biz/amour-amour-san-mateo-4",
     "photos": []
   },
   {
@@ -23,6 +24,7 @@
     "price_range": 2,
     "rating": 4,
     "notes": "A fully plant based menu, great indoor and outdoor seating, with a Chef's tasting menu.",
+    "website": "https://www.twelvemonthburlingame.com",
     "photos": []
   },
   {
@@ -36,6 +38,7 @@
     "price_range": 2,
     "rating": 4,
     "notes": "Ocean-to-table dining experience inspired by the seasonal ingredients found in the nearby Pacific Ocean.",
+    "website": "https://oceanoysterbargrill.com",
     "photos": []
   },
   {
@@ -49,6 +52,7 @@
     "price_range": 3,
     "rating": 4,
     "notes": "Wildly popular collaboration between Chef Michael Mina and Ayesha Curry.",
+    "website": "https://internationalsmoke.com",
     "photos": []
   },
   {
@@ -62,6 +66,7 @@
     "price_range": 2,
     "rating": 4,
     "notes": "Laid-back Vietnamese restaurant whipping up pho, seafood, noodles & meat dishes, plus cocktails.",
+    "website": "https://gaokitchen.com/san-mateo-menu-1",
     "photos": []
   },
   {
@@ -75,6 +80,7 @@
     "price_range": 2,
     "rating": 4,
     "notes": "A Mediterranean escape. A lush garden with live trees, water, and a citrus-cedar scent sets the tone for slow dinners and sun-lit brunch",
+    "website": "https://www.amararestaurants.com",
     "photos": []
   }
 ]

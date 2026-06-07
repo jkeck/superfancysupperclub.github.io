@@ -6,7 +6,9 @@
     "neighborhood": "Atherton",
     "price_range": 4,
     "added_by": "Jessie",
-    "notes": "A 1-star Michelin restaurant serving classic American continental cuisine"
+    "notes": "A 1-star Michelin restaurant serving classic American continental cuisine",
+    "website": "https://www.selbysrestaurant.com",
+    "closed_days": []
   },
   {
     "slug": "mistral",
@@ -15,7 +17,9 @@
     "neighborhood": "Redwood Shores",
     "price_range": 3,
     "added_by": "Jessie",
-    "notes": "A waterfront restaurant & bar located in Redwood Shores for 25 years."
+    "notes": "A waterfront restaurant & bar located in Redwood Shores for 25 years.",
+    "website": "https://www.mistraldining.com",
+    "closed_days": [0, 1]
   },
   {
     "slug": "village-pub",
@@ -24,7 +28,9 @@
     "neighborhood": "Woodside",
     "price_range": 4,
     "added_by": "Jessie",
-    "notes": "High-end American eatery drawing a well-heeled clientele with gourmet seasonal fare & fine wines."
+    "notes": "High-end American eatery drawing a well-heeled clientele with gourmet seasonal fare & fine wines.",
+    "website": "https://www.thevillagepub.net",
+    "closed_days": []
   },
   {
     "slug": "all-spice",
@@ -33,7 +39,9 @@
     "neighborhood": "San Mateo",
     "price_range": 4,
     "added_by": "Jessie",
-    "notes": "An oft-changing 3, 4 or 5-course Chef's Menu of creative, Modern Californian cuisine inside our charming cottage."
+    "notes": "An oft-changing 3, 4 or 5-course Chef's Menu of creative, Modern Californian cuisine inside our charming cottage.",
+    "website": "https://allspicerestaurant.com",
+    "closed_days": [0, 1]
   },
   {
     "slug": "hurrica",
@@ -42,7 +50,9 @@
     "neighborhood": "Redwood City",
     "price_range": 4,
     "added_by": "Davide",
-    "notes": "Beautiful restaurant featuring hearth-fired seasonal eats, a full bar and harbor views."
+    "notes": "Beautiful restaurant featuring hearth-fired seasonal eats, a full bar and harbor views.",
+    "website": "https://www.hurrica.restaurant",
+    "closed_days": []
   },
   {
     "slug": "kodawari",
@@ -51,6 +61,8 @@
     "neighborhood": "San Mateo",
     "price_range": 3,
     "added_by": "Davide",
-    "notes": "Sushi bar & Yakitori in South San Mateo offering a modern spin on Japanese cuisine."
+    "notes": "Sushi bar & Yakitori in South San Mateo offering a modern spin on Japanese cuisine.",
+    "website": "https://kodawarisushi.com",
+    "closed_days": []
   }
 ]

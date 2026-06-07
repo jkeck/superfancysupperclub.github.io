@@ -8,6 +8,8 @@ const fmtFull = (d: Date) =>
   d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 const fmtTime = (d: Date) =>
   d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+const hasMap = !upcoming.secret && upcoming.lat != null && upcoming.lng != null;
 ---
 
 <Base title="Upcoming · Super Fancy Supper Club" activeNav="upcoming">
@@ -16,7 +18,11 @@ const fmtTime = (d: Date) =>
     <header class="page-header">
       <div class="page-eyebrow">NEXT GATHERING</div>
       <h1 class="restaurant-name">
-        {upcoming.secret ? 'TO BE ANNOUNCED' : upcoming.name}
+        {upcoming.secret ? 'TO BE ANNOUNCED' : (
+          upcoming.website
+            ? <a href={upcoming.website} target="_blank" rel="noopener" class="restaurant-link">{upcoming.name}</a>
+            : upcoming.name
+        )}
       </h1>
       {!upcoming.secret && upcoming.neighborhood && (
         <div class="restaurant-location">{upcoming.neighborhood}</div>
@@ -40,8 +46,80 @@ const fmtTime = (d: Date) =>
       </a>
     )}
 
+    {hasMap && (
+      <div class="map-section">
+        <div class="map-wrap">
+          <div
+            id="upcoming-map"
+            data-lat={upcoming.lat}
+            data-lng={upcoming.lng}
+            data-name={upcoming.name}
+            data-neighborhood={upcoming.neighborhood}
+          ></div>
+        </div>
+      </div>
+    )}
+
   </main>
 </Base>
+
+{hasMap && (
+  <>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+      async function initMap() {
+        const mapEl = document.getElementById('upcoming-map') as HTMLElement;
+        if (!mapEl) return;
+
+        const lat = parseFloat(mapEl.dataset.lat ?? '0');
+        const lng = parseFloat(mapEl.dataset.lng ?? '0');
+        const name = mapEl.dataset.name ?? '';
+        const neighborhood = mapEl.dataset.neighborhood ?? '';
+
+        await new Promise<void>((resolve, reject) => {
+          if ((window as any).L) { resolve(); return; }
+          const s = document.createElement('script');
+          s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+          s.onload = () => resolve();
+          s.onerror = reject;
+          document.head.appendChild(s);
+        });
+
+        const L = (window as any).L;
+
+        const map = L.map('upcoming-map', {
+          center: [lat, lng],
+          zoom: 15,
+          zoomControl: true,
+          scrollWheelZoom: false,
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20,
+        }).addTo(map);
+
+        const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" fill="#c9a767" stroke="#061812" stroke-width="2"/>
+          <circle cx="12" cy="12" r="4" fill="#061812"/>
+        </svg>`;
+        const icon = L.divIcon({
+          html: markerSvg,
+          className: '',
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+
+        L.marker([lat, lng], { icon })
+          .addTo(map)
+          .bindPopup(`<div class="map-popup"><strong>${name}</strong><div>${neighborhood}</div></div>`);
+      }
+
+      initMap();
+    </script>
+  </>
+)}
 
 <style>
   main {
@@ -78,11 +156,19 @@ const fmtTime = (d: Date) =>
     line-height: 1.05;
     text-wrap: balance;
   }
+  .restaurant-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 2px solid var(--brass-faint);
+    transition: border-color 0.2s;
+  }
+  .restaurant-link:hover { border-color: var(--brass-lo); }
   .restaurant-location {
     font-family: var(--serif-body);
     font-style: italic;
     font-size: clamp(15px, 1.6vw, 20px);
     color: var(--brass-lo);
+    margin-top: 10px;
   }
 
   .event-details {
@@ -121,4 +207,57 @@ const fmtTime = (d: Date) =>
     border-color: var(--brass);
     color: var(--brass-hi);
   }
+
+  .map-section {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  .map-wrap {
+    width: 100%;
+    border: 1px solid var(--brass-faint);
+    overflow: hidden;
+  }
+  #upcoming-map {
+    height: clamp(200px, 28vh, 320px);
+    width: 100%;
+    background: var(--green-deep);
+  }
+
+  :global(.leaflet-popup-content-wrapper) {
+    background: var(--green) !important;
+    border: 1px solid var(--brass-lo) !important;
+    border-radius: 0 !important;
+    color: var(--brass-hi) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
+  }
+  :global(.leaflet-popup-tip) { background: var(--brass-lo) !important; }
+  :global(.leaflet-popup-close-button) { color: var(--brass-lo) !important; }
+  :global(.map-popup) {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--brass-hi);
+  }
+  :global(.map-popup strong) {
+    font-family: "Cinzel", serif;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    display: block;
+    margin-bottom: 2px;
+  }
+  :global(.leaflet-control-zoom a) {
+    background: var(--green) !important;
+    color: var(--brass) !important;
+    border-color: var(--brass-faint) !important;
+  }
+  :global(.leaflet-control-attribution) {
+    background: rgba(6,24,18,0.7) !important;
+    color: var(--brass-faint) !important;
+    font-size: 10px !important;
+  }
+  :global(.leaflet-control-attribution a) { color: var(--brass-lo) !important; }
 </style>

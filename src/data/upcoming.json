@@ -4,5 +4,8 @@
   "teaser": "It may not be Vespucci, but we will be the judge",
   "secret": false,
   "neighborhood": "Burlingame",
-  "ics_url": "/events/stella-2026-06.ics"
+  "ics_url": "/events/stella-2026-06.ics",
+  "website": "https://stellaburlingame.com",
+  "lat": 37.577517494246116,
+  "lng": -122.34917141338138
 }

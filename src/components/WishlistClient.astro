@@ -7,6 +7,8 @@ interface WishlistItem {
   price_range: number;
   added_by?: string;
   notes?: string;
+  website?: string;
+  closed_days?: number[];
   session?: boolean;
 }
 
@@ -18,13 +20,14 @@ const { baseList } = Astro.props;
 
 const diamonds = (filled: number, total = 4) =>
   '◆'.repeat(filled) + '◇'.repeat(total - filled);
+
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 ---
 
 <div class="wishlist-root">
 
   <!-- Controls -->
   <div class="wishlist-controls">
-    <button id="draw-btn" class="draw-btn" disabled>DRAW THE LOT</button>
     <form id="add-form" class="add-form" autocomplete="off">
       <input id="add-name" type="text" placeholder="Add a restaurant…" class="add-input" maxlength="80" />
       <input id="add-cuisine" type="text" placeholder="Cuisine (optional)" class="add-input add-input--sm" maxlength="40" />
@@ -33,12 +36,29 @@ const diamonds = (filled: number, total = 4) =>
     </form>
   </div>
 
+  <div class="wishlist-controls lot-draw">
+    <div class="date-filter">
+      <label for="filter-date" class="date-filter-label">RESERVATION DATE</label>
+      <input id="filter-date" type="date" class="date-input" />
+      <span id="filter-status" class="filter-status" hidden></span>
+    </div>
+    <button id="draw-btn" class="draw-btn" disabled>DRAW THE LOT</button>
+  </div>
+
   <!-- Card list — server-rendered base, client appends session items -->
   <div id="wishlist-cards" class="wishlist-cards">
     {baseList.map(item => (
-      <article class="wish-card" data-name={item.name}>
+      <article
+        class="wish-card"
+        data-name={item.name}
+        data-closed-days={JSON.stringify(item.closed_days ?? [])}
+      >
         <div class="wish-card-header">
-          <h2 class="wish-name">{item.name}</h2>
+          <h2 class="wish-name">
+            {item.website
+              ? <a href={item.website} target="_blank" rel="noopener" class="wish-name-link">{item.name}</a>
+              : item.name}
+          </h2>
           <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>$ {diamonds(item.price_range)}</span>
         </div>
         <div class="wish-meta">
@@ -48,6 +68,9 @@ const diamonds = (filled: number, total = 4) =>
           {item.added_by && <><span class="sep">·</span><span class="wish-added">added by {item.added_by}</span></>}
         </div>
         {item.notes && <p class="wish-notes">{item.notes}</p>}
+        <div class="wish-card-footer">
+          <button class="wish-remove-btn" type="button" aria-label="Remove from draw">REMOVE</button>
+        </div>
       </article>
     ))}
   </div>
@@ -67,28 +90,87 @@ const diamonds = (filled: number, total = 4) =>
 </div>
 
 <script>
-  interface Item { name: string; }
+  const cardsEl    = document.getElementById('wishlist-cards')!;
+  const modal      = document.getElementById('picker-modal')!;
+  const display    = document.getElementById('picker-display')!;
+  const drawBtn    = document.getElementById('draw-btn') as HTMLButtonElement;
+  const addForm    = document.getElementById('add-form') as HTMLFormElement;
+  const nameInput  = document.getElementById('add-name') as HTMLInputElement;
+  const cuisineInput = document.getElementById('add-cuisine') as HTMLInputElement;
+  const hoodInput  = document.getElementById('add-hood') as HTMLInputElement;
+  const filterDate = document.getElementById('filter-date') as HTMLInputElement;
+  const filterStatus = document.getElementById('filter-status') as HTMLElement;
 
-  // Collect names from server-rendered + dynamically added cards
-  function getNames(): string[] {
+  const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  // Cards in draw pool: not removed, not date-filtered
+  function getActiveCards(): HTMLElement[] {
     return Array.from(document.querySelectorAll<HTMLElement>('#wishlist-cards .wish-card'))
-      .map(el => el.dataset.name ?? '')
-      .filter(Boolean);
+      .filter(el => el.dataset.removed !== 'true' && el.dataset.filtered !== 'true');
   }
 
-  const cardsEl   = document.getElementById('wishlist-cards')!;
-  const modal     = document.getElementById('picker-modal')!;
-  const display   = document.getElementById('picker-display')!;
-  const drawBtn   = document.getElementById('draw-btn') as HTMLButtonElement;
-  const addForm   = document.getElementById('add-form') as HTMLFormElement;
-  const nameInput = document.getElementById('add-name') as HTMLInputElement;
-  const cuisineInput = document.getElementById('add-cuisine') as HTMLInputElement;
-  const hoodInput = document.getElementById('add-hood') as HTMLInputElement;
+  function getNames(): string[] {
+    return getActiveCards().map(el => el.dataset.name ?? '').filter(Boolean);
+  }
 
-  // Enable draw button once we have items
   function syncDrawBtn() {
     drawBtn.disabled = getNames().length === 0;
   }
+
+  // --- Date filter ---
+  function applyDateFilter() {
+    const value = filterDate.value;
+    if (!value) {
+      document.querySelectorAll<HTMLElement>('#wishlist-cards .wish-card').forEach(card => {
+        delete card.dataset.filtered;
+      });
+      filterStatus.hidden = true;
+      filterStatus.textContent = '';
+    } else {
+      // Parse as local date to avoid timezone shifting the day-of-week
+      const [y, m, d] = value.split('-').map(Number);
+      const targetDay = new Date(y, m - 1, d).getDay();
+      let closedCount = 0;
+      let totalBase = 0;
+
+      document.querySelectorAll<HTMLElement>('#wishlist-cards .wish-card:not(.wish-card--session)').forEach(card => {
+        totalBase++;
+        let closedDays: number[] = [];
+        try { closedDays = JSON.parse(card.dataset.closedDays ?? '[]'); } catch {}
+        if (closedDays.includes(targetDay)) {
+          card.dataset.filtered = 'true';
+          closedCount++;
+        } else {
+          delete card.dataset.filtered;
+        }
+      });
+
+      const openCount = totalBase - closedCount;
+      if (closedCount > 0) {
+        filterStatus.textContent = `${openCount} open`;
+        filterStatus.hidden = false;
+      } else {
+        filterStatus.textContent = `All open`;
+        filterStatus.hidden = false;
+      }
+    }
+    syncDrawBtn();
+  }
+
+  filterDate.addEventListener('change', applyDateFilter);
+
+  // --- Remove toggle ---
+  cardsEl.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest<HTMLElement>('.wish-remove-btn');
+    if (!btn) return;
+    const card = btn.closest<HTMLElement>('.wish-card');
+    if (!card) return;
+    const isRemoved = card.dataset.removed === 'true';
+    card.dataset.removed = isRemoved ? 'false' : 'true';
+    btn.textContent = isRemoved ? 'REMOVE' : 'RESTORE';
+    syncDrawBtn();
+  });
+
   syncDrawBtn();
 
   // --- Add form ---
@@ -102,12 +184,16 @@ const diamonds = (filled: number, total = 4) =>
     const card = document.createElement('article');
     card.className = 'wish-card wish-card--session';
     card.dataset.name = name;
+    card.dataset.closedDays = '[]';
     card.innerHTML = `
       <div class="wish-card-header">
         <h2 class="wish-name">${escHtml(name)}</h2>
         <span class="wish-session-badge">THIS SESSION</span>
       </div>
       ${cuisine || hood ? `<div class="wish-meta">${[cuisine, hood].filter(Boolean).map(escHtml).join('<span class="sep">·</span>')}</div>` : ''}
+      <div class="wish-card-footer">
+        <button class="wish-remove-btn" type="button">REMOVE</button>
+      </div>
     `;
     cardsEl.appendChild(card);
     nameInput.value = '';
@@ -128,12 +214,11 @@ const diamonds = (filled: number, total = 4) =>
     document.getElementById('draw-again-btn')!.style.display = 'none';
 
     const winner = names[Math.floor(Math.random() * names.length)];
-    let elapsed = 0;
     const duration = 2800;
     const start = performance.now();
 
     function animate(now: number) {
-      elapsed = now - start;
+      const elapsed = now - start;
       const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 4);
       const interval = 40 + eased * 340;
@@ -156,22 +241,130 @@ const diamonds = (filled: number, total = 4) =>
     modal.hidden = true;
   });
   modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      clearTimeout(animFrame);
-      modal.hidden = true;
-    }
+    if (e.target === modal) { clearTimeout(animFrame); modal.hidden = true; }
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.hidden) {
-      clearTimeout(animFrame);
-      modal.hidden = true;
-    }
+    if (e.key === 'Escape' && !modal.hidden) { clearTimeout(animFrame); modal.hidden = true; }
   });
 
   function escHtml(s: string) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
+
+<style is:global>
+ /* Cards */
+  .wishlist-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+    gap: clamp(16px, 2.5vw, 28px);
+  }
+  .wish-card {
+    border: 1px solid var(--brass-faint);
+    padding: clamp(16px, 2vw, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: border-color 0.2s, opacity 0.2s;
+  }
+  .wish-card:hover { border-color: var(--brass-lo); }
+  .wish-card--session { border-style: dashed; }
+
+  /* Filtered by date — hide entirely */
+  .wish-card[data-filtered="true"] { display: none; }
+
+  /* Manually removed — dim and cross out name */
+  .wish-card[data-removed="true"] {
+    opacity: 0.28;
+    pointer-events: none;
+  }
+  .wish-card[data-removed="true"] .wish-remove-btn {
+    pointer-events: all;
+  }
+  .wish-card[data-removed="true"] .wish-name {
+    text-decoration: line-through;
+    text-decoration-color: var(--brass-faint);
+  }
+
+  .wish-card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .wish-name {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-size: clamp(14px, 1.5vw, 18px);
+    letter-spacing: 0.06em;
+    color: var(--brass-hi);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .wish-name-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--brass-faint);
+    transition: border-color 0.15s;
+  }
+  .wish-name-link:hover { border-color: var(--brass-lo); }
+  .wish-price {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--brass-lo);
+    flex-shrink: 0;
+  }
+  .wish-session-badge {
+    font-family: var(--serif-display);
+    font-size: 8px;
+    letter-spacing: 0.35em;
+    color: var(--brass-faint);
+    flex-shrink: 0;
+  }
+  .wish-meta {
+    font-size: clamp(12px, 1.2vw, 14px);
+    color: var(--brass-lo);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+
+  .wish-added { font-style: italic; }
+  .wish-notes {
+    margin: 4px 0 0;
+    font-style: italic;
+    font-size: clamp(13px, 1.25vw, 15px);
+    color: #8a6f2e;
+    line-height: 1.5;
+  }
+
+  /* Card footer with remove button */
+  .wish-card-footer {
+    margin-top: 8px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .wish-remove-btn {
+    font-family: var(--serif-display);
+    font-size: 8px;
+    letter-spacing: 0.35em;
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--brass-faint);
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .wish-remove-btn:hover {
+    border-color: var(--brass-faint);
+    color: var(--brass-lo);
+  }
+  .wish-card[data-removed="true"] .wish-remove-btn {
+    color: var(--brass-lo);
+    border-color: var(--brass-faint);
+    opacity: 1;
+  }
+</style is:global>
 
 <style>
   .wishlist-root { display: flex; flex-direction: column; gap: clamp(24px, 3.5vh, 40px); }
@@ -184,6 +377,10 @@ const diamonds = (filled: number, total = 4) =>
     gap: 16px;
     padding-bottom: clamp(16px, 2.5vh, 28px);
     border-bottom: 1px solid var(--brass-faint);
+  }
+
+  .wishlist-controls.lot-draw {
+    justify-content: center;
   }
 
   .draw-btn {
@@ -201,6 +398,40 @@ const diamonds = (filled: number, total = 4) =>
   }
   .draw-btn:hover:not(:disabled) { background: rgba(201,167,103,0.08); }
   .draw-btn:disabled { opacity: 0.35; cursor: default; }
+
+  /* Date filter */
+  .date-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .date-filter-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.35em;
+    color: var(--brass-lo);
+    white-space: nowrap;
+  }
+  .date-input {
+    font-family: var(--serif-body);
+    font-size: 14px;
+    background: transparent;
+    border: 1px solid var(--brass-faint);
+    color: var(--brass-hi);
+    padding: 6px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+    color-scheme: dark;
+  }
+  .date-input:focus { border-color: var(--brass-lo); }
+  .filter-status {
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(11px, 1.1vw, 13px);
+    color: var(--brass-lo);
+    white-space: nowrap;
+  }
 
   .add-form {
     display: flex;
@@ -240,67 +471,8 @@ const diamonds = (filled: number, total = 4) =>
   }
   .add-btn:hover { border-color: var(--brass-lo); color: var(--brass-hi); }
 
-  /* Cards */
-  .wishlist-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
-    gap: clamp(16px, 2.5vw, 28px);
-  }
-  .wish-card {
-    border: 1px solid var(--brass-faint);
-    padding: clamp(16px, 2vw, 24px);
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    transition: border-color 0.2s;
-  }
-  .wish-card:hover { border-color: var(--brass-lo); }
-  .wish-card--session { border-style: dashed; }
-
-  .wish-card-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .wish-name {
-    margin: 0;
-    font-family: var(--serif-display);
-    font-size: clamp(14px, 1.5vw, 18px);
-    letter-spacing: 0.06em;
-    color: var(--brass-hi);
-    font-weight: 500;
-    line-height: 1.2;
-  }
-  .wish-price {
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    color: var(--brass-lo);
-    flex-shrink: 0;
-  }
-  .wish-session-badge {
-    font-family: var(--serif-display);
-    font-size: 8px;
-    letter-spacing: 0.35em;
-    color: var(--brass-faint);
-    flex-shrink: 0;
-  }
-  .wish-meta {
-    font-size: clamp(12px, 1.2vw, 14px);
-    color: var(--brass-lo);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
-  }
+ 
   .sep { margin: 0 0.4em; color: var(--brass-faint); }
-  .wish-added { font-style: italic; }
-  .wish-notes {
-    margin: 4px 0 0;
-    font-style: italic;
-    font-size: clamp(13px, 1.25vw, 15px);
-    color: #8a6f2e;
-    line-height: 1.5;
-  }
 
   /* Picker modal */
   .picker-modal {
