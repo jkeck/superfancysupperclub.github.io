@@ -43,5 +43,14 @@
     "price_range": 4,
     "added_by": "Davide",
     "notes": "Beautiful restaurant featuring hearth-fired seasonal eats, a full bar and harbor views."
+  },
+  {
+    "slug": "kodawari",
+    "name": "Kodawari Japanese Cuisine",
+    "cuisine": "Japenese",
+    "neighborhood": "San Mateo",
+    "price_range": 3,
+    "added_by": "Davide",
+    "notes": "Sushi bar & Yakitori in South San Mateo offering a modern spin on Japanese cuisine."
   }
 ]
