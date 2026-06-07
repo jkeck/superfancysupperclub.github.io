@@ -39,7 +39,7 @@ const diamonds = (filled: number, total = 4) =>
       <article class="wish-card" data-name={item.name}>
         <div class="wish-card-header">
           <h2 class="wish-name">{item.name}</h2>
-          <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>{diamonds(item.price_range)}</span>
+          <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>$ {diamonds(item.price_range)}</span>
         </div>
         <div class="wish-meta">
           {item.cuisine && <span>{item.cuisine}</span>}
