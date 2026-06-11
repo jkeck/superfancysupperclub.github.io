@@ -84,6 +84,7 @@ body::after {
 .frame .corner.br { bottom: -7px; right: -7px; }
 
 @media (max-width: 480px) {
+  .frame { margin: -5px; }
   .frame .corner { width: 10px; height: 10px; box-shadow: 0 0 0 2px var(--green); }
   .frame .corner.tl, .frame .corner.tr { top: -5px; }
   .frame .corner.bl, .frame .corner.br { bottom: -5px; }
