@@ -7,7 +7,7 @@ Record the completed upcoming dinner in the historical dinners list.
 1. Read `src/data/upcoming.json` and show the user the current upcoming dinner (name, date, neighborhood).
 
 2. Collect:
-   - **Rating** — integer 1–5
+   - **External rating** — the Yelp (or equivalent) star rating, e.g. `4` or `4.5`; search for it if not known
    - **Cuisine** — search for it or infer from context; ask if uncertain
    - **Price range** — integer 1–4; search for it or infer from context; ask if uncertain
    - **Lat/Lng** — attempt to look up from the restaurant name and neighborhood via web search; if uncertain ask the user to confirm or provide them
@@ -31,12 +31,12 @@ Record the completed upcoming dinner in the historical dinners list.
      "lat": 37.0000,
      "lng": -122.0000,
      "price_range": 3,
-     "rating": 4,
+     "external_rating": 4,
      "notes": "Short description.",
      "website": "https://example.com",
      "photos": []
    }
    ```
-   Omit `website` if unknown (don't use an empty string).
+   Omit `website` if unknown (don't use an empty string). Do NOT add `published` or `our_rating` — those are set separately via `/publish-dinner-page`.
 
 6. Confirm: show the entry added to dinners.json.
