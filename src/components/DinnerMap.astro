@@ -1,36 +1,36 @@
 ---
-interface Pin {
+interface Props {
   name: string;
-  date: string;
-  neighborhood: string;
-  external_rating: number;
   lat: number;
   lng: number;
+  neighborhood: string;
 }
 
-interface Props {
-  pins: Pin[];
-}
-
-const { pins } = Astro.props;
+const { name, lat, lng, neighborhood } = Astro.props;
 ---
 
 <div class="map-wrap">
-  <div id="stats-map" data-pins={JSON.stringify(pins)}></div>
+  <div
+    id="dinner-map"
+    data-name={name}
+    data-lat={lat}
+    data-lng={lng}
+    data-neighborhood={neighborhood}
+  ></div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
   async function initMap() {
-    const mapEl = document.getElementById('stats-map') as HTMLElement;
+    const mapEl = document.getElementById('dinner-map') as HTMLElement;
     if (!mapEl) return;
 
-    const pins = JSON.parse(mapEl.dataset.pins ?? '[]') as Array<{
-      name: string; date: string; neighborhood: string; external_rating: number; lat: number; lng: number;
-    }>;
+    const name = mapEl.dataset.name ?? '';
+    const lat = parseFloat(mapEl.dataset.lat ?? '0');
+    const lng = parseFloat(mapEl.dataset.lng ?? '0');
+    const neighborhood = mapEl.dataset.neighborhood ?? '';
 
-    // Load Leaflet JS from CDN
     await new Promise<void>((resolve, reject) => {
       if ((window as any).L) { resolve(); return; }
       const s = document.createElement('script');
@@ -42,20 +42,18 @@ const { pins } = Astro.props;
 
     const L = (window as any).L;
 
-    const map = L.map('stats-map', {
-      center: [37.614039417884854, -122.43011826515809],
-      zoom: 9,
+    const map = L.map('dinner-map', {
+      center: [lat, lng],
+      zoom: 15,
       zoomControl: true,
     });
 
-    // CartoDB Dark Matter tiles
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20,
     }).addTo(map);
 
-    // Brass marker icon
     const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
       <circle cx="10" cy="10" r="8" fill="#c9a767" stroke="#061812" stroke-width="2"/>
       <circle cx="10" cy="10" r="3" fill="#061812"/>
@@ -67,22 +65,14 @@ const { pins } = Astro.props;
       iconAnchor: [10, 10],
     });
 
-    const fmtDate = (d: string) =>
-      new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const diamonds = (n: number) => '◆'.repeat(n) + '◇'.repeat(5 - n);
-
-    pins.forEach(pin => {
-      L.marker([pin.lat, pin.lng], { icon: markerIcon })
-        .addTo(map)
-        .bindPopup(`
-          <div class="map-popup">
-            <strong>${pin.name}</strong>
-            <div>${fmtDate(pin.date)}</div>
-            <div>${pin.neighborhood}</div>
-            <div class="map-rating">★ ${diamonds(pin.external_rating)}</div>
-          </div>
-        `);
-    });
+    L.marker([lat, lng], { icon: markerIcon })
+      .addTo(map)
+      .bindPopup(`
+        <div class="map-popup">
+          <strong>${name}</strong>
+          <div>${neighborhood}</div>
+        </div>
+      `);
   }
 
   initMap();
@@ -93,13 +83,12 @@ const { pins } = Astro.props;
     border: 1px solid var(--brass-faint);
     overflow: hidden;
   }
-  #stats-map {
-    height: clamp(280px, 40vh, 480px);
+  #dinner-map {
+    height: clamp(200px, 28vh, 320px);
     width: 100%;
     background: var(--green-deep);
   }
 
-  /* Override Leaflet popup styles to match the aesthetic */
   :global(.leaflet-popup-content-wrapper) {
     background: var(--green) !important;
     border: 1px solid var(--brass-lo) !important;
@@ -125,11 +114,6 @@ const { pins } = Astro.props;
     letter-spacing: 0.08em;
     display: block;
     margin-bottom: 4px;
-  }
-  :global(.map-popup .map-rating) {
-    letter-spacing: 0.15em;
-    color: var(--brass);
-    margin-top: 2px;
   }
   :global(.leaflet-control-zoom a) {
     background: var(--green) !important;

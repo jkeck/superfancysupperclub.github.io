@@ -1,10 +1,14 @@
 ---
+import StarRating from './StarRating.astro';
+import { RATING_PROVIDER } from '../data/config.ts';
+
 interface WishlistItem {
   slug: string;
   name: string;
   cuisine: string;
   neighborhood: string;
   price_range: number;
+  external_rating?: number | null;
   added_by?: string;
   notes?: string;
   website?: string;
@@ -59,7 +63,14 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
               ? <a href={item.website} target="_blank" rel="noopener" class="wish-name-link">{item.name}</a>
               : item.name}
           </h2>
-          <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>$ {diamonds(item.price_range)}</span>
+          <div class="wish-card-end">
+            {item.external_rating != null && (
+              <span class="wish-rating" title={`${RATING_PROVIDER} rating: ${item.external_rating}`}>
+                <StarRating rating={item.external_rating} size={11} label={RATING_PROVIDER} />
+              </span>
+            )}
+            <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>$ {diamonds(item.price_range)}</span>
+          </div>
         </div>
         <div class="wish-meta">
           {item.cuisine && <span>{item.cuisine}</span>}
@@ -288,9 +299,19 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 
   .wish-card-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
+  }
+  .wish-card-end {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .wish-rating {
+    display: flex;
+    align-items: center;
   }
   .wish-name {
     margin: 0;

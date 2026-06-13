@@ -1,16 +1,25 @@
 ---
+import StarRating from './StarRating.astro';
+import { RATING_PROVIDER } from '../data/config.ts';
+
 interface Props {
+  slug: string;
   name: string;
   date: string;
   cuisine: string;
   neighborhood: string;
   price_range: number;
-  rating: number;
-  notes: string;
+  external_rating: number;
+  our_rating?: number | null;
+  notes?: string;
   website?: string;
+  published?: boolean;
+  lat?: number;
+  lng?: number;
+  photos?: string[];
 }
 
-const { name, date, cuisine, neighborhood, price_range, rating, notes, website } = Astro.props;
+const { slug, name, date, cuisine, neighborhood, price_range, external_rating, our_rating, notes, website, published } = Astro.props;
 
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -21,16 +30,35 @@ const diamonds = (filled: number, total = 4) =>
 
 <article class="dinner-card">
   <time class="dinner-date" datetime={date}>{fmtDate(date)}</time>
-  <h2 class="dinner-name">
-    {website ? <a href={website} target="_blank" rel="noopener" class="dinner-name-link">{name}</a> : name}
-  </h2>
+  <div class="dinner-name-row">
+    <h2 class="dinner-name">
+      {published
+        ? <a href={`/dinners/${slug}`} class="dinner-name-link">{name}</a>
+        : name}
+    </h2>
+    {website && (
+      <a href={website} target="_blank" rel="noopener" class="website-icon" title={`Visit ${name} website`} aria-label={`${name} website (opens in new tab)`}>↗</a>
+    )}
+  </div>
   <div class="dinner-meta">
     <span class="dinner-cuisine">{cuisine}</span>
     <span class="sep">·</span>
     <span class="dinner-neighborhood">{neighborhood}</span>
     <span class="sep">·</span>
     <span class="ratings">
-      <span class="dinner-rating" title={`Rating: ${rating} of 5`}>★ {diamonds(rating, 5)}</span>
+      <span class="rating-item">
+        <span class="rating-label">{RATING_PROVIDER}</span>
+        <StarRating rating={external_rating} size={12} label={RATING_PROVIDER} />
+      </span>
+      {our_rating != null && (
+        <>
+          <span class="sep">·</span>
+          <span class="rating-item">
+            <span class="rating-label">Ours</span>
+            <StarRating rating={our_rating} size={12} label="Our Rating" />
+          </span>
+        </>
+      )}
       <span class="sep">·</span>
       <span class="dinner-price" title={`Price range: ${price_range} of 4`}>$ {diamonds(price_range)}</span>
     </span>
@@ -52,6 +80,11 @@ const diamonds = (filled: number, total = 4) =>
     color: var(--brass-lo);
     text-transform: uppercase;
   }
+  .dinner-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
   .dinner-name {
     margin: 0;
     font-family: var(--serif-display);
@@ -66,6 +99,9 @@ const diamonds = (filled: number, total = 4) =>
     font-size: clamp(14px, 1.4vw, 16px);
     color: var(--brass);
     letter-spacing: 0.04em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
   }
   .sep { margin: 0 0.5em; color: var(--brass-faint); }
 
@@ -73,11 +109,28 @@ const diamonds = (filled: number, total = 4) =>
     .ratings { display: block; }
   }
 
-  .dinner-price { letter-spacing: 0.1em; }
-  .dinner-rating {
+  .ratings {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .rating-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .rating-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.3em;
+    color: var(--brass-lo);
+    text-transform: uppercase;
+  }
+  .dinner-price {
+    letter-spacing: 0.1em;
     font-size: clamp(13px, 1.3vw, 15px);
     color: var(--brass);
-    letter-spacing: 0.15em;
   }
   .dinner-name-link {
     color: inherit;
@@ -86,6 +139,16 @@ const diamonds = (filled: number, total = 4) =>
     transition: border-color 0.15s;
   }
   .dinner-name-link:hover { border-color: var(--brass-lo); }
+  .website-icon {
+    font-family: var(--serif-body);
+    font-size: clamp(14px, 1.5vw, 18px);
+    color: var(--brass-lo);
+    text-decoration: none;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .website-icon:hover { color: var(--brass); }
   .dinner-notes {
     margin: 4px 0 0;
     font-style: italic;

@@ -1,0 +1,283 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import StarRating from '../../components/StarRating.astro';
+import DinnerMap from '../../components/DinnerMap.astro';
+import dinnersData from '../../data/dinners.json';
+import { RATING_PROVIDER } from '../../data/config.ts';
+
+type DinnerEntry = {
+  slug: string;
+  name: string;
+  date: string;
+  cuisine: string;
+  neighborhood: string;
+  lat: number;
+  lng: number;
+  price_range: number;
+  external_rating: number;
+  our_rating?: number | null;
+  notes?: string;
+  website?: string;
+  photos: string[];
+  published?: boolean;
+};
+
+export async function getStaticPaths() {
+  const entries = await getCollection('dinners');
+  return entries.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+type Props = {
+  entry: Awaited<ReturnType<typeof getCollection<'dinners'>>>[0];
+};
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const dinner = (dinnersData as DinnerEntry[]).find(d => d.slug === entry.id);
+if (!dinner) throw new Error(`No dinner data found for slug: ${entry.id}`);
+
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total - n);
+---
+
+<Base title={`${dinner.name} · Super Fancy Supper Club`} activeNav="past-dinners">
+  <main>
+    <nav class="breadcrumb">
+      <a href="/past-dinners" class="back-link">← Past Dinners</a>
+    </nav>
+
+    <header class="dinner-header">
+      <time class="dinner-date" datetime={dinner.date}>{fmtDate(dinner.date)}</time>
+      <div class="dinner-name-row">
+        <h1 class="dinner-name">{dinner.name}</h1>
+        {dinner.website && (
+          <a href={dinner.website} target="_blank" rel="noopener" class="website-icon" title={`Visit ${dinner.name} website`} aria-label={`${dinner.name} website (opens in new tab)`}>↗</a>
+        )}
+      </div>
+      <div class="dinner-meta">
+        <span>{dinner.cuisine}</span>
+        <span class="sep">·</span>
+        <span>{dinner.neighborhood}</span>
+        <span class="sep">·</span>
+        <span class="price-range" title={`Price range: ${dinner.price_range} of 4`}>$ {diamonds(dinner.price_range)}</span>
+      </div>
+      <div class="dinner-ratings">
+        <div class="rating-row">
+          <span class="rating-label">{RATING_PROVIDER}</span>
+          <StarRating rating={dinner.external_rating} label={RATING_PROVIDER} />
+          <span class="rating-num">{dinner.external_rating}</span>
+        </div>
+        {dinner.our_rating != null && (
+          <div class="rating-row">
+            <span class="rating-label">Ours</span>
+            <StarRating rating={dinner.our_rating} label="Our Rating" />
+            <span class="rating-num">{dinner.our_rating}</span>
+          </div>
+        )}
+      </div>
+    </header>
+
+    {dinner.lat && dinner.lng && (
+      <div class="map-section">
+        <DinnerMap name={dinner.name} lat={dinner.lat} lng={dinner.lng} neighborhood={dinner.neighborhood} />
+      </div>
+    )}
+
+    <div class="dinner-body">
+      <Content />
+    </div>
+
+    {entry.data.highlights && entry.data.highlights.length > 0 && (
+      <section class="dinner-section">
+        <hr class="brass-rule" />
+        <h2 class="section-title">HIGHLIGHTS</h2>
+        <ul class="item-list">
+          {entry.data.highlights.map((h: string) => <li>{h}</li>)}
+        </ul>
+      </section>
+    )}
+
+    {entry.data.dishes && entry.data.dishes.length > 0 && (
+      <section class="dinner-section">
+        <hr class="brass-rule" />
+        <h2 class="section-title">STANDOUT DISHES</h2>
+        <ul class="item-list">
+          {entry.data.dishes.map((d: string) => <li>{d}</li>)}
+        </ul>
+      </section>
+    )}
+
+    {entry.data.tips && entry.data.tips.length > 0 && (
+      <section class="dinner-section">
+        <hr class="brass-rule" />
+        <h2 class="section-title">PRO TIPS</h2>
+        <ul class="item-list">
+          {entry.data.tips.map((t: string) => <li>{t}</li>)}
+        </ul>
+      </section>
+    )}
+  </main>
+</Base>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .breadcrumb {
+    margin-bottom: clamp(20px, 3vh, 36px);
+  }
+  .back-link {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.38em;
+    color: var(--brass-lo);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--brass); }
+
+  .dinner-header {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: clamp(24px, 3.5vh, 40px);
+  }
+  .dinner-date {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.38em;
+    color: var(--brass-lo);
+    text-transform: uppercase;
+  }
+  .dinner-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .dinner-name {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 500;
+    font-size: clamp(28px, 4.5vw, 56px);
+    letter-spacing: 0.06em;
+    color: var(--brass-hi);
+    line-height: 1.05;
+  }
+  .website-icon {
+    font-family: var(--serif-body);
+    font-size: clamp(16px, 2vw, 22px);
+    color: var(--brass-lo);
+    text-decoration: none;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+  .website-icon:hover { color: var(--brass); }
+
+  .dinner-meta {
+    font-family: var(--serif-body);
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--brass);
+    letter-spacing: 0.04em;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .sep { margin: 0 0.5em; color: var(--brass-faint); }
+  .price-range { letter-spacing: 0.1em; }
+
+  .dinner-ratings {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .rating-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rating-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.35em;
+    color: var(--brass-lo);
+    text-transform: uppercase;
+    width: 3.5em;
+  }
+  .rating-num {
+    font-family: var(--serif-body);
+    font-size: clamp(13px, 1.3vw, 15px);
+    color: var(--brass-lo);
+  }
+
+  .map-section {
+    margin-bottom: clamp(28px, 4vh, 48px);
+  }
+
+  .dinner-body {
+    font-family: var(--serif-body);
+    font-size: clamp(16px, 1.65vw, 19px);
+    color: var(--brass-hi);
+    line-height: 1.7;
+    max-width: 72ch;
+    margin-bottom: clamp(16px, 2.5vh, 28px);
+  }
+  .dinner-body :global(p) {
+    margin: 0 0 1.2em;
+  }
+  .dinner-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .dinner-section {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 1.5vh, 18px);
+  }
+  .section-title {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-size: clamp(10px, 1.1vw, 13px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    font-weight: 400;
+    padding-left: 0.4em;
+  }
+  .item-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 68ch;
+  }
+  .item-list li {
+    font-family: var(--serif-body);
+    font-size: clamp(15px, 1.55vw, 18px);
+    color: var(--brass);
+    line-height: 1.5;
+    padding-left: 1.2em;
+    position: relative;
+  }
+  .item-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    font-size: 0.55em;
+    top: 0.35em;
+    color: var(--brass-lo);
+  }
+</style>

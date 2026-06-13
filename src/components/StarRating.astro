@@ -1,0 +1,56 @@
+---
+interface Props {
+  rating: number;
+  max?: number;
+  size?: number;
+  label?: string;
+}
+
+const { rating, max = 5, size = 14, label = 'Rating' } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 8);
+
+const STAR_PATH = 'M10 2 L12.245 7.527 L18.09 7.527 L13.673 11.059 L15.388 16.779 L10 13.618 L4.612 16.779 L6.327 11.059 L1.91 7.527 L7.755 7.527 Z';
+
+const stars = Array.from({ length: max }, (_, i) => {
+  const fill = Math.min(Math.max(rating - i, 0), 1);
+  return { fill, clipId: `sc-${uid}-${i}` };
+});
+---
+
+<span class="star-rating" aria-label={`${label} rating: ${rating} out of ${max}`}>
+  {stars.map(({ fill, clipId }) => (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {fill > 0 && fill < 1 && (
+        <defs>
+          <clipPath id={clipId}>
+            <rect x="0" y="0" width={fill * 20} height="20" />
+          </clipPath>
+        </defs>
+      )}
+      <path d={STAR_PATH} fill="#5a4818" />
+      {fill > 0 && (
+        <path
+          d={STAR_PATH}
+          fill="#c9a767"
+          clip-path={fill < 1 ? `url(#${clipId})` : undefined}
+        />
+      )}
+    </svg>
+  ))}
+</span>
+
+<style>
+  .star-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+    line-height: 1;
+    vertical-align: middle;
+  }
+</style>

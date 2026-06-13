@@ -33,7 +33,7 @@ const years = Object.entries(byYear).sort((a, b) => Number(a[0]) - Number(b[0]))
 const maxPerYear = Math.max(...Object.values(byYear));
 
 // Average rating
-const avgRating = dinners.reduce((s, d) => s + d.rating, 0) / dinners.length;
+const avgRating = dinners.reduce((s, d) => s + d.external_rating, 0) / dinners.length;
 
 // Unexplored neighborhoods (on wishlist but never visited)
 const visitedHoods = new Set(dinners.map(d => d.neighborhood));
@@ -58,7 +58,7 @@ const streak = longestStreak(dinners);
 // Map pins
 const pins = dinners
   .filter(d => d.lat && d.lng)
-  .map(d => ({ name: d.name, date: d.date, neighborhood: d.neighborhood, rating: d.rating, lat: d.lat, lng: d.lng }));
+  .map(d => ({ name: d.name, date: d.date, neighborhood: d.neighborhood, external_rating: d.external_rating, lat: d.lat, lng: d.lng }));
 
 const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total - n);
 ---
