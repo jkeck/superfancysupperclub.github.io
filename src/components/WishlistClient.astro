@@ -22,9 +22,6 @@ interface Props {
 
 const { baseList } = Astro.props;
 
-const diamonds = (filled: number, total = 4) =>
-  '◆'.repeat(filled) + '◇'.repeat(total - filled);
-
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 ---
 
@@ -69,7 +66,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
                 <StarRating rating={item.external_rating} size={11} label={RATING_PROVIDER} />
               </span>
             )}
-            <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>$ {diamonds(item.price_range)}</span>
+            <span class="wish-price" title={`Price range: ${item.price_range} of 4`}>{'$'.repeat(item.price_range)}</span>
           </div>
         </div>
         <div class="wish-meta">

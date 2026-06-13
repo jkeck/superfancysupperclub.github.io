@@ -69,7 +69,7 @@ const { pins } = Astro.props;
 
     const fmtDate = (d: string) =>
       new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    const diamonds = (n: number) => '◆'.repeat(n) + '◇'.repeat(5 - n);
+    const fmtStars = (n: number) => '★'.repeat(Math.floor(n)) + (n % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(n));
 
     pins.forEach(pin => {
       L.marker([pin.lat, pin.lng], { icon: markerIcon })
@@ -79,7 +79,7 @@ const { pins } = Astro.props;
             <strong>${pin.name}</strong>
             <div>${fmtDate(pin.date)}</div>
             <div>${pin.neighborhood}</div>
-            <div class="map-rating">★ ${diamonds(pin.external_rating)}</div>
+            <div class="map-rating">${fmtStars(pin.external_rating)}</div>
           </div>
         `);
     });

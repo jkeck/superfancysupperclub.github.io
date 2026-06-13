@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import StarRating from '../../components/StarRating.astro';
+import DiamondRating from '../../components/DiamondRating.astro';
 import DinnerMap from '../../components/DinnerMap.astro';
 import dinnersData from '../../data/dinners.json';
 import { RATING_PROVIDER } from '../../data/config.ts';
@@ -44,7 +45,7 @@ if (!dinner) throw new Error(`No dinner data found for slug: ${entry.id}`);
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
-const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total - n);
+const priceStr = '$'.repeat(dinner.price_range);
 ---
 
 <Base title={`${dinner.name} · Super Fancy Supper Club`} activeNav="past-dinners">
@@ -66,20 +67,20 @@ const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total 
         <span class="sep">·</span>
         <span>{dinner.neighborhood}</span>
         <span class="sep">·</span>
-        <span class="price-range" title={`Price range: ${dinner.price_range} of 4`}>$ {diamonds(dinner.price_range)}</span>
-      </div>
-      <div class="dinner-ratings">
-        <div class="rating-row">
+        <span class="price" title={`Price range: ${dinner.price_range} of 4`}>{priceStr}</span>
+        <span class="sep">·</span>
+        <span class="rating-item">
           <span class="rating-label">{RATING_PROVIDER}</span>
-          <StarRating rating={dinner.external_rating} label={RATING_PROVIDER} />
-          <span class="rating-num">{dinner.external_rating}</span>
-        </div>
+          <StarRating rating={dinner.external_rating} size={13} label={RATING_PROVIDER} />
+        </span>
         {dinner.our_rating != null && (
-          <div class="rating-row">
-            <span class="rating-label">Ours</span>
-            <StarRating rating={dinner.our_rating} label="Our Rating" />
-            <span class="rating-num">{dinner.our_rating}</span>
-          </div>
+          <>
+            <span class="sep">·</span>
+            <span class="rating-item">
+              <span class="rating-label">Ours</span>
+              <DiamondRating rating={dinner.our_rating} size={13} label="Our Rating" />
+            </span>
+          </>
         )}
       </div>
     </header>
@@ -195,31 +196,18 @@ const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total 
     align-items: center;
   }
   .sep { margin: 0 0.5em; color: var(--brass-faint); }
-  .price-range { letter-spacing: 0.1em; }
-
-  .dinner-ratings {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 4px;
-  }
-  .rating-row {
-    display: flex;
+  .price { letter-spacing: 0.08em; }
+  .rating-item {
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
   }
   .rating-label {
     font-family: var(--serif-display);
     font-size: clamp(8px, 0.85vw, 10px);
-    letter-spacing: 0.35em;
+    letter-spacing: 0.3em;
     color: var(--brass-lo);
     text-transform: uppercase;
-    width: 3.5em;
-  }
-  .rating-num {
-    font-family: var(--serif-body);
-    font-size: clamp(13px, 1.3vw, 15px);
-    color: var(--brass-lo);
   }
 
   .map-section {

@@ -1,5 +1,6 @@
 ---
 import StarRating from './StarRating.astro';
+import DiamondRating from './DiamondRating.astro';
 import { RATING_PROVIDER } from '../data/config.ts';
 
 interface Props {
@@ -24,8 +25,7 @@ const { slug, name, date, cuisine, neighborhood, price_range, external_rating, o
 const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
-const diamonds = (filled: number, total = 4) =>
-  '◆'.repeat(filled) + '◇'.repeat(total - filled);
+const priceStr = '$'.repeat(price_range);
 ---
 
 <article class="dinner-card">
@@ -55,12 +55,12 @@ const diamonds = (filled: number, total = 4) =>
           <span class="sep">·</span>
           <span class="rating-item">
             <span class="rating-label">Ours</span>
-            <StarRating rating={our_rating} size={12} label="Our Rating" />
+            <DiamondRating rating={our_rating} size={12} label="Our Rating" />
           </span>
         </>
       )}
       <span class="sep">·</span>
-      <span class="dinner-price" title={`Price range: ${price_range} of 4`}>$ {diamonds(price_range)}</span>
+      <span class="dinner-price" title={`Price range: ${price_range} of 4`}>{priceStr}</span>
     </span>
   </div>
 

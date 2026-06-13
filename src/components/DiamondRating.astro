@@ -1,0 +1,56 @@
+---
+interface Props {
+  rating: number;
+  max?: number;
+  size?: number;
+  label?: string;
+}
+
+const { rating, max = 5, size = 14, label = 'Rating' } = Astro.props;
+const uid = Math.random().toString(36).slice(2, 8);
+
+const DIAMOND_PATH = 'M10 1 L19 10 L10 19 L1 10 Z';
+
+const gems = Array.from({ length: max }, (_, i) => {
+  const fill = Math.min(Math.max(rating - i, 0), 1);
+  return { fill, clipId: `dc-${uid}-${i}` };
+});
+---
+
+<span class="diamond-rating" aria-label={`${label} rating: ${rating} out of ${max}`}>
+  {gems.map(({ fill, clipId }) => (
+    <svg
+      aria-hidden="true"
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {fill > 0 && fill < 1 && (
+        <defs>
+          <clipPath id={clipId}>
+            <rect x="0" y="0" width={fill * 20} height="20" />
+          </clipPath>
+        </defs>
+      )}
+      <path d={DIAMOND_PATH} fill="#5a4818" />
+      {fill > 0 && (
+        <path
+          d={DIAMOND_PATH}
+          fill="#c9a767"
+          clip-path={fill < 1 ? `url(#${clipId})` : undefined}
+        />
+      )}
+    </svg>
+  ))}
+</span>
+
+<style>
+  .diamond-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    line-height: 1;
+    vertical-align: middle;
+  }
+</style>

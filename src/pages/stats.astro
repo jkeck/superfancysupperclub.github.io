@@ -60,7 +60,6 @@ const pins = dinners
   .filter(d => d.lat && d.lng)
   .map(d => ({ name: d.name, date: d.date, neighborhood: d.neighborhood, external_rating: d.external_rating, lat: d.lat, lng: d.lng }));
 
-const diamonds = (n: number, total = 4) => '◆'.repeat(n) + '◇'.repeat(total - n);
 ---
 
 <Base title="Stats · Super Fancy Supper Club" activeNav="stats">
