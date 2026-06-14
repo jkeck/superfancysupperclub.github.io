@@ -370,6 +370,8 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       conn.on('close', () => { conns.delete(conn); updateTally(); });
     });
 
+    peer.on('disconnected', () => { if (!peer.destroyed) peer.reconnect(); });
+
     peer.on('error', (err: any) => {
       peer.destroy();
       showError(err.type === 'unavailable-id'
