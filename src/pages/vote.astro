@@ -1,0 +1,843 @@
+---
+import Base from '../layouts/Base.astro';
+import upcoming from '../data/upcoming.json';
+
+const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
+  name: upcoming.name,
+  neighborhood: (upcoming as any).neighborhood ?? null,
+  website: (upcoming as any).website ?? null,
+  date: upcoming.date,
+}) : 'null';
+---
+
+<Base title="Vote · Super Fancy Supper Club">
+  <main id="vote-app" data-restaurant={restaurant}>
+
+    <div id="s-loading" class="vstate">
+      <div class="eyebrow">PLEASE WAIT</div>
+      <p class="hint">Connecting…</p>
+    </div>
+
+    <div id="s-host-start" class="vstate" hidden>
+      <div class="eyebrow">CAST YOUR VERDICT</div>
+      <h1 id="host-title" class="vtitle">Rate Tonight's Dinner</h1>
+      <div id="host-meta" class="dinner-meta"></div>
+      <p class="hint">Open a session, then share the code with your guests.</p>
+      <button id="btn-start" class="vbtn">OPEN A SESSION</button>
+    </div>
+
+    <div id="s-host-active" class="vstate" hidden>
+      <div class="eyebrow">SESSION OPEN</div>
+      <h1 class="vtitle">Awaiting Verdicts</h1>
+      <div class="code-block">
+        <div class="code-label">SHARE THIS CODE</div>
+        <div id="code-val" class="code-val"></div>
+      </div>
+      <img id="qr-img" class="qr-img" alt="QR code for the voting session" />
+      <a id="session-url" class="session-url" target="_blank" rel="noopener"></a>
+
+      <div class="host-vote-section">
+        <div class="host-vote-eyebrow">YOUR VERDICT</div>
+        <div id="host-diamonds" class="diamonds" role="group" aria-label="Your diamond rating"></div>
+        <div id="host-diamond-label" class="diamond-label">&nbsp;</div>
+        <div class="optional-fields">
+          <div class="optional-header">OPTIONAL · YOUR THOUGHTS</div>
+          <label class="field-label" for="hf-dishes">FAVORITE DISHES</label>
+          <textarea id="hf-dishes" class="field-input" rows="2" placeholder="What did you love?"></textarea>
+          <label class="field-label" for="hf-highlights">HIGHLIGHTS</label>
+          <textarea id="hf-highlights" class="field-input" rows="2" placeholder="What stood out?"></textarea>
+          <label class="field-label" for="hf-tips">PRO TIPS</label>
+          <textarea id="hf-tips" class="field-input" rows="2" placeholder="Advice for next time?"></textarea>
+        </div>
+      </div>
+
+      <div id="vote-tally" class="tally">WAITING FOR GUESTS</div>
+      <button id="btn-reveal" class="vbtn" disabled>REVEAL RESULTS</button>
+    </div>
+
+    <div id="s-host-results" class="vstate" hidden>
+      <div class="eyebrow">THE VERDICT IS IN</div>
+      <h1 id="host-results-title" class="vtitle result-title"></h1>
+      <div id="host-results-meta" class="dinner-meta"></div>
+      <div id="host-avg" class="result-avg"></div>
+      <div id="host-bars" class="bars"></div>
+      <div id="host-responses" class="responses"></div>
+      <button id="btn-new" class="vbtn">START NEW SESSION</button>
+    </div>
+
+    <div id="s-guest-vote" class="vstate" hidden>
+      <div class="eyebrow">CAST YOUR VERDICT</div>
+      <h1 id="guest-title" class="vtitle">Rate Tonight's Dinner</h1>
+      <div id="guest-meta" class="dinner-meta"></div>
+      <div id="diamonds" class="diamonds" role="group" aria-label="Diamond rating"></div>
+      <div id="diamond-label" class="diamond-label">&nbsp;</div>
+      <div class="optional-fields">
+        <div class="optional-header">OPTIONAL · SHARE YOUR THOUGHTS</div>
+        <label class="field-label" for="f-dishes">FAVORITE DISHES</label>
+        <textarea id="f-dishes" class="field-input" rows="2" placeholder="What did you love?"></textarea>
+        <label class="field-label" for="f-highlights">HIGHLIGHTS</label>
+        <textarea id="f-highlights" class="field-input" rows="2" placeholder="What stood out?"></textarea>
+        <label class="field-label" for="f-tips">PRO TIPS</label>
+        <textarea id="f-tips" class="field-input" rows="2" placeholder="Advice for next time?"></textarea>
+      </div>
+      <button id="btn-submit" class="vbtn" disabled>SUBMIT</button>
+    </div>
+
+    <div id="s-guest-sent" class="vstate" hidden>
+      <div class="eyebrow">YOUR VOTE IS CAST</div>
+      <h1 class="vtitle">Awaiting the Verdict</h1>
+      <div id="sent-diamonds" class="sent-diamonds"></div>
+      <div id="sent-inputs" class="responses"></div>
+      <p class="hint">The host will reveal results shortly.</p>
+    </div>
+
+    <div id="s-guest-results" class="vstate" hidden>
+      <div class="eyebrow">THE VERDICT IS IN</div>
+      <h1 id="guest-results-title" class="vtitle result-title"></h1>
+      <div id="guest-results-meta" class="dinner-meta"></div>
+      <div id="guest-avg" class="result-avg"></div>
+      <div id="guest-bars" class="bars"></div>
+      <div id="guest-responses" class="responses"></div>
+    </div>
+
+    <div id="s-error" class="vstate" hidden>
+      <div class="eyebrow">UNABLE TO CONNECT</div>
+      <h1 class="vtitle">Something Went Wrong</h1>
+      <p id="error-msg" class="hint error-hint"></p>
+      <a href="/vote" class="vbtn">TRY AGAIN</a>
+    </div>
+
+  </main>
+</Base>
+
+<script>
+  import { diamondRatingHTML } from '../lib/diamondRating';
+
+  const LABELS = ['POOR', 'FAIR', 'GOOD', 'VERY GOOD', 'EXCELLENT'];
+  const joinCode = new URLSearchParams(window.location.search).get('code');
+
+  // ── Types ──────────────────────────────────────────────────────────────────
+  interface RestaurantData { name: string; neighborhood: string | null; website: string | null; date: string; }
+  interface VoteResponse { dishes?: string; highlights?: string; tips?: string; }
+  interface VoteData extends VoteResponse { stars: number; }
+  interface Results { average: number; total: number; breakdown: number[]; responses: VoteResponse[]; }
+
+  // ── Restaurant context ─────────────────────────────────────────────────────
+  const mainEl = document.getElementById('vote-app');
+  const restaurantData: RestaurantData | null = JSON.parse(mainEl?.dataset.restaurant ?? 'null');
+
+  function isDinnerDay(dateStr: string): boolean {
+    const d = new Date(dateStr), now = new Date();
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  }
+
+  const active = restaurantData && isDinnerDay(restaurantData.date) ? restaurantData : null;
+  const dinnerTitle = active ? active.name : "Tonight's Dinner";
+
+  function applyRestaurantContext() {
+    document.getElementById('host-title')!.textContent = `Rate ${dinnerTitle}`;
+    document.getElementById('guest-title')!.textContent = `Rate ${dinnerTitle}`;
+    if (active) {
+      ['host-results-title', 'guest-results-title'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = active.name;
+      });
+      if (active.neighborhood) {
+        ['host-meta', 'guest-meta', 'host-results-meta', 'guest-results-meta'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = active.neighborhood!;
+        });
+      }
+    }
+  }
+
+  // ── Utilities ──────────────────────────────────────────────────────────────
+  function show(id: string) {
+    document.querySelectorAll<HTMLElement>('.vstate').forEach(el => { el.hidden = true; });
+    const el = document.getElementById(id);
+    if (el) el.hidden = false;
+  }
+
+  function showError(msg: string) {
+    const el = document.getElementById('error-msg');
+    if (el) el.textContent = msg;
+    show('s-error');
+  }
+
+  function loadScript(src: string) {
+    return new Promise<void>((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error(`Failed to load ${src}`));
+      document.head.appendChild(s);
+    });
+  }
+
+  function peerId(code: string) { return `sfsc-v-${code}`; }
+
+  function randomCode() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  }
+
+  function gems(filled: number, total = 5) {
+    return '◆'.repeat(filled) + '◇'.repeat(total - filled);
+  }
+
+  function escapeHtml(s: string) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function fieldVal(id: string): string | undefined {
+    return (document.getElementById(id) as HTMLTextAreaElement)?.value.trim() || undefined;
+  }
+
+  // ── Shared: build interactive diamond rating ───────────────────────────────
+  function buildDiamonds(containerId: string, labelId: string, onSelect: (n: number) => void) {
+    const container = document.getElementById(containerId)!;
+    container.innerHTML = '';
+    for (let i = 1; i <= 5; i++) {
+      const span = document.createElement('span');
+      span.className = 'gem-btn';
+      span.textContent = '◇';
+      span.dataset.n = String(i);
+      span.setAttribute('role', 'button');
+      span.setAttribute('tabindex', '0');
+      span.setAttribute('aria-label', `${i} diamond${i > 1 ? 's' : ''}`);
+      container.appendChild(span);
+    }
+
+    let selected = 0;
+
+    function paint(n: number) {
+      container.querySelectorAll<HTMLElement>('.gem-btn').forEach((s, i) => {
+        s.textContent = i < n ? '◆' : '◇';
+        s.classList.toggle('lit', i < n);
+      });
+      const label = document.getElementById(labelId);
+      if (label) label.textContent = n > 0 ? LABELS[n - 1] : ' ';
+    }
+
+    container.addEventListener('mouseover', e => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('.gem-btn');
+      if (t) paint(Number(t.dataset.n));
+    });
+    container.addEventListener('mouseleave', () => paint(selected));
+    container.addEventListener('click', e => {
+      const t = (e.target as HTMLElement).closest<HTMLElement>('.gem-btn');
+      if (!t) return;
+      selected = Number(t.dataset.n);
+      paint(selected);
+      onSelect(selected);
+    });
+    container.addEventListener('keydown', e => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      const t = (e.target as HTMLElement).closest<HTMLElement>('.gem-btn');
+      if (!t) return;
+      e.preventDefault();
+      selected = Number(t.dataset.n);
+      paint(selected);
+      onSelect(selected);
+    });
+
+    return { getSelected: () => selected };
+  }
+
+  // ── Rendering ──────────────────────────────────────────────────────────────
+  function renderBars(container: HTMLElement, breakdown: number[]) {
+    const max = Math.max(...breakdown, 1);
+    container.innerHTML = [5, 4, 3, 2, 1].map(n => {
+      const count = breakdown[n - 1];
+      const pct = Math.round((count / max) * 100);
+      return `<div class="bar-row">
+        <span class="bar-gems">${gems(n)}</span>
+        <span class="bar-track"><span class="bar-fill" style="width:0%" data-pct="${pct}"></span></span>
+        <span class="bar-count">${count}</span>
+      </div>`;
+    }).join('');
+    requestAnimationFrame(() => {
+      container.querySelectorAll<HTMLElement>('.bar-fill').forEach(el => {
+        el.style.transition = 'width 0.7s cubic-bezier(0.4,0,0.2,1)';
+        el.style.width = `${el.dataset.pct}%`;
+      });
+    });
+  }
+
+  function renderResponseList(container: HTMLElement, responses: VoteResponse[]) {
+    const sections: { key: keyof VoteResponse; label: string }[] = [
+      { key: 'dishes',     label: 'FAVORITE DISHES' },
+      { key: 'highlights', label: 'HIGHLIGHTS' },
+      { key: 'tips',       label: 'PRO TIPS' },
+    ];
+    const html = sections.map(({ key, label }) => {
+      const items = responses.map(r => r[key]?.trim()).filter((v): v is string => !!v);
+      if (!items.length) return '';
+      return `<div class="response-section">
+        <div class="response-label">${label}</div>
+        ${items.map(item => `<div class="response-item">${escapeHtml(item)}</div>`).join('')}
+      </div>`;
+    }).join('');
+    if (html) container.innerHTML = `<hr class="brass-rule">${html}`;
+  }
+
+  function renderResults(avgEl: HTMLElement, barsEl: HTMLElement, responsesEl: HTMLElement | null, data: Results) {
+    avgEl.innerHTML = `
+          <div class="avg-gems">${diamondRatingHTML(data.average, { size: 28, label: 'Average' })}</div>
+      <div class="avg-num">${data.average.toFixed(1)}<span class="avg-denom"> / 5</span></div>
+      <div class="avg-total">${data.total} VOTE${data.total !== 1 ? 'S' : ''} CAST</div>
+    `;
+    renderBars(barsEl, data.breakdown);
+    if (responsesEl && data.responses?.length) renderResponseList(responsesEl, data.responses);
+  }
+
+  // ── Host ───────────────────────────────────────────────────────────────────
+  function initHost() {
+    applyRestaurantContext();
+    show('s-host-start');
+
+    document.getElementById('btn-start')?.addEventListener('click', async () => {
+      show('s-loading');
+      try {
+        await loadScript('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js');
+        startHostSession();
+      } catch {
+        showError('Could not load session libraries. Check your internet connection and try again.');
+      }
+    });
+  }
+
+  function startHostSession() {
+    const code = randomCode();
+    const peer = new (window as any).Peer(peerId(code));
+    const votes: VoteData[] = [];
+    const conns = new Set<any>();
+    let hostSelected = 0;
+
+    function updateTally() {
+      const el = document.getElementById('vote-tally');
+      if (!el) return;
+      const g = conns.size, v = votes.length;
+      el.textContent = `${g} GUEST${g !== 1 ? 'S' : ''} CONNECTED · ${v} VOTE${v !== 1 ? 'S' : ''} RECEIVED`;
+      const btn = document.getElementById('btn-reveal') as HTMLButtonElement | null;
+      if (btn) btn.disabled = votes.length === 0 && hostSelected === 0;
+    }
+
+    peer.on('open', () => {
+      const url = `${window.location.origin}/vote?code=${code}`;
+
+      const qrImg = document.getElementById('qr-img') as HTMLImageElement;
+      if (qrImg) {
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&bgcolor=0e2419&color=c9a767&margin=2`;
+      }
+
+      const urlEl = document.getElementById('session-url') as HTMLAnchorElement;
+      if (urlEl) { urlEl.href = url; urlEl.textContent = url.replace(/^https?:\/\//, ''); }
+
+      show('s-host-active');
+      const codeEl = document.getElementById('code-val');
+      if (codeEl) codeEl.textContent = code;
+
+      buildDiamonds('host-diamonds', 'host-diamond-label', n => {
+        hostSelected = n;
+        updateTally();
+      });
+
+      updateTally();
+    });
+
+    peer.on('connection', (conn: any) => {
+      conns.add(conn);
+      updateTally();
+
+      conn.on('data', (data: any) => {
+        if (data?.type === 'vote' && typeof data.stars === 'number' && data.stars >= 1 && data.stars <= 5) {
+          votes.push({
+            stars:      data.stars,
+            dishes:     typeof data.dishes     === 'string' ? data.dishes.trim().slice(0, 500)     : undefined,
+            highlights: typeof data.highlights === 'string' ? data.highlights.trim().slice(0, 500) : undefined,
+            tips:       typeof data.tips       === 'string' ? data.tips.trim().slice(0, 500)       : undefined,
+          });
+          updateTally();
+        }
+      });
+
+      conn.on('close', () => { conns.delete(conn); updateTally(); });
+    });
+
+    peer.on('error', (err: any) => {
+      peer.destroy();
+      showError(err.type === 'unavailable-id'
+        ? 'Session code conflict — please try opening a new session.'
+        : `Connection error: ${err.message}`);
+    });
+
+    document.getElementById('btn-reveal')?.addEventListener('click', () => {
+      const allVotes = [...votes];
+      if (hostSelected > 0) {
+        allVotes.push({
+          stars:      hostSelected,
+          dishes:     fieldVal('hf-dishes'),
+          highlights: fieldVal('hf-highlights'),
+          tips:       fieldVal('hf-tips'),
+        });
+      }
+
+      const total = allVotes.length;
+      const breakdown = [0, 0, 0, 0, 0];
+      allVotes.forEach(v => breakdown[v.stars - 1]++);
+      const average = total > 0 ? allVotes.reduce((a, b) => a + b.stars, 0) / total : 0;
+      const responses = allVotes
+        .filter(v => v.dishes || v.highlights || v.tips)
+        .map(({ dishes, highlights, tips }) => ({ dishes, highlights, tips }));
+      const results: Results = { average, total, breakdown, responses };
+
+      conns.forEach(c => { try { c.send({ type: 'results', ...results }); } catch {} });
+      peer.destroy();
+
+      renderResults(
+        document.getElementById('host-avg')!,
+        document.getElementById('host-bars')!,
+        document.getElementById('host-responses'),
+        results,
+      );
+      show('s-host-results');
+    });
+
+    document.getElementById('btn-new')?.addEventListener('click', () => { window.location.href = '/vote'; });
+  }
+
+  // ── Guest ──────────────────────────────────────────────────────────────────
+  async function initGuest(code: string) {
+    try {
+      await loadScript('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js');
+    } catch {
+      showError('Could not load session libraries. Check your internet connection and try again.');
+      return;
+    }
+
+    applyRestaurantContext();
+    let receivedResults = false;
+    const peer = new (window as any).Peer();
+
+    peer.on('open', () => {
+      const conn = peer.connect(peerId(code), { reliable: true });
+
+      conn.on('open', () => {
+        show('s-guest-vote');
+        const { getSelected } = buildDiamonds('diamonds', 'diamond-label', n => {
+          const btn = document.getElementById('btn-submit') as HTMLButtonElement | null;
+          if (btn) btn.disabled = false;
+        });
+
+        document.getElementById('btn-submit')?.addEventListener('click', () => {
+          const selected = getSelected();
+          if (!selected) return;
+
+          const dishes     = fieldVal('f-dishes');
+          const highlights = fieldVal('f-highlights');
+          const tips       = fieldVal('f-tips');
+
+          conn.send({ type: 'vote', stars: selected, dishes, highlights, tips });
+
+          // Show the voter their own submitted inputs
+          const sentEl = document.getElementById('sent-diamonds');
+          if (sentEl) sentEl.textContent = gems(selected);
+
+          const sentInputs = document.getElementById('sent-inputs');
+          if (sentInputs) {
+            const mine: VoteResponse = { dishes, highlights, tips };
+            const hasSome = dishes || highlights || tips;
+            if (hasSome) renderResponseList(sentInputs, [mine]);
+          }
+
+          show('s-guest-sent');
+        });
+      });
+
+      conn.on('data', (data: any) => {
+        if (data?.type === 'results') {
+          receivedResults = true;
+          peer.destroy();
+          renderResults(
+            document.getElementById('guest-avg')!,
+            document.getElementById('guest-bars')!,
+            document.getElementById('guest-responses'),
+            data as Results,
+          );
+          show('s-guest-results');
+        }
+      });
+
+      conn.on('close', () => { if (!receivedResults) showError('Connection to the host was lost.'); });
+    });
+
+    peer.on('error', (err: any) => {
+      peer.destroy();
+      showError(err.type === 'peer-unavailable'
+        ? 'No active session found for that code. Check with your host and try again.'
+        : `Connection error: ${err.message}`);
+    });
+  }
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  if (joinCode) {
+    initGuest(joinCode);
+  } else {
+    initHost();
+  }
+</script>
+
+<style>
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(16px, 3vh, 40px) 0;
+    gap: clamp(20px, 3.5vh, 36px);
+  }
+
+  .vstate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(16px, 2.5vh, 26px);
+    width: 100%;
+    max-width: 480px;
+  }
+  .vstate[hidden] { display: none; }
+
+  .eyebrow {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.5em;
+    color: var(--brass-lo);
+    padding-left: 0.5em;
+  }
+
+  .vtitle {
+    margin: 0;
+    font-family: var(--serif-display);
+    font-weight: 600;
+    font-size: clamp(24px, 5vw, 48px);
+    letter-spacing: 0.06em;
+    color: var(--brass-hi);
+    line-height: 1.1;
+  }
+
+  .dinner-meta {
+    margin-top: -8px;
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(14px, 1.5vw, 18px);
+    color: var(--brass-lo);
+  }
+
+  .hint {
+    margin: 0;
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(15px, 1.6vw, 18px);
+    color: var(--brass-lo);
+    max-width: 36ch;
+    line-height: 1.5;
+  }
+  .error-hint { color: #c06050; font-style: normal; }
+
+  /* ── Button ─────────────────────────────────────────────────────────────── */
+  .vbtn {
+    display: inline-block;
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.45em;
+    color: var(--brass);
+    border: 1px solid var(--brass-lo);
+    padding: 12px 32px 12px 36px;
+    background: transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .vbtn:hover:not(:disabled) { border-color: var(--brass); color: var(--brass-hi); }
+  .vbtn:disabled { opacity: 0.35; cursor: default; }
+
+  /* ── Code block ─────────────────────────────────────────────────────────── */
+  .code-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--brass-faint);
+    padding: 20px 40px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .code-label {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.5em;
+    color: var(--brass-lo);
+    padding-left: 0.5em;
+  }
+  .code-val {
+    font-family: var(--serif-display);
+    font-size: clamp(28px, 6vw, 48px);
+    letter-spacing: 0.35em;
+    color: var(--brass-hi);
+    padding-left: 0.35em;
+  }
+
+  /* ── QR code ────────────────────────────────────────────────────────────── */
+  .qr-img {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--brass-faint);
+    display: block;
+  }
+
+  /* ── Session URL ────────────────────────────────────────────────────────── */
+  .session-url {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.12em;
+    color: var(--brass-lo);
+    text-decoration: none;
+    word-break: break-all;
+    text-align: center;
+    transition: color 0.15s;
+    max-width: 320px;
+  }
+  .session-url:hover { color: var(--brass); }
+
+  /* ── Host vote section ──────────────────────────────────────────────────── */
+  .host-vote-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px, 2vh, 20px);
+    padding-top: clamp(14px, 2vh, 22px);
+    border-top: 1px solid var(--brass-faint);
+  }
+  .host-vote-eyebrow {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.5em;
+    color: var(--brass-lo);
+    padding-left: 0.5em;
+  }
+
+  .result-title { font-size: clamp(20px, 3.5vw, 36px); font-weight: 500; }
+
+  /* ── Vote tally ─────────────────────────────────────────────────────────── */
+  .tally {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.3em;
+    color: var(--brass);
+    padding-left: 0.3em;
+  }
+
+  /* ── Diamond rating ─────────────────────────────────────────────────────── */
+  .diamonds {
+    display: flex;
+    gap: 0;
+    align-items: center;
+  }
+  :global(.gem-btn) {
+    cursor: pointer;
+    padding: 0 4px;
+    font-family: var(--serif-body);
+    font-size: clamp(28px, 6vw, 42px);
+    color: var(--brass-lo);
+    line-height: 1;
+    transition: color 0.12s, transform 0.1s;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  :global(.gem-btn.lit) { color: var(--brass-hi); }
+  :global(.gem-btn:hover) { transform: scale(1.15); }
+  :global(.gem-btn:active) { transform: scale(0.92); }
+  :global(.gem-btn:focus) { outline: none; }
+  :global(.gem-btn:focus-visible) { outline: 1px solid var(--brass-lo); outline-offset: 2px; }
+
+  .diamond-label {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    padding-left: 0.4em;
+    min-height: 1.5em;
+  }
+
+  /* ── Optional text fields ───────────────────────────────────────────────── */
+  .optional-fields {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: clamp(14px, 2vh, 22px);
+    border-top: 1px solid var(--brass-faint);
+    text-align: left;
+  }
+  .optional-header {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.45em;
+    color: var(--brass-faint);
+    text-align: center;
+    padding-left: 0.45em;
+    margin-bottom: 4px;
+  }
+  .field-label {
+    display: block;
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 9px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    padding-left: 0.4em;
+    margin-top: 10px;
+  }
+  .field-label:first-of-type { margin-top: 0; }
+  .field-input {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--brass-faint);
+    color: var(--brass-hi);
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 8px 12px;
+    resize: vertical;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+  .field-input:focus { outline: none; border-color: var(--brass-lo); }
+  .field-input::placeholder { font-style: normal; color: var(--brass-faint); }
+
+  /* ── Sent diamonds ──────────────────────────────────────────────────────── */
+  .sent-diamonds {
+    font-family: var(--serif-body);
+    font-size: clamp(28px, 6vw, 42px);
+    color: var(--brass);
+    letter-spacing: 0.08em;
+  }
+
+  /* ── Results ────────────────────────────────────────────────────────────── */
+  .result-avg {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  :global(.avg-gems) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  :global(.avg-gems .diamond-rating svg) {
+    width: clamp(28px, 6vw, 42px);
+    height: clamp(28px, 6vw, 42px);
+  }
+  :global(.avg-num) {
+    font-family: var(--serif-display);
+    font-size: clamp(22px, 4vw, 36px);
+    color: var(--brass-hi);
+    letter-spacing: 0.05em;
+  }
+  :global(.avg-denom) { font-size: 0.65em; color: var(--brass-lo); }
+  :global(.avg-total) {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.4em;
+    color: var(--brass-lo);
+    padding-left: 0.4em;
+  }
+
+  .bars {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  :global(.bar-row) {
+    display: grid;
+    grid-template-columns: 6em 1fr 2em;
+    align-items: center;
+    gap: 10px;
+  }
+  :global(.bar-gems) {
+    font-family: var(--serif-body);
+    font-size: clamp(10px, 1.2vw, 13px);
+    color: var(--brass-lo);
+    text-align: right;
+    letter-spacing: 0.05em;
+  }
+  :global(.bar-track) {
+    height: 6px;
+    background: var(--green-mid);
+    border: 1px solid var(--brass-faint);
+    overflow: hidden;
+  }
+  :global(.bar-fill) {
+    display: block;
+    height: 100%;
+    background: var(--brass);
+    width: 0%;
+  }
+  :global(.bar-count) {
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.9vw, 11px);
+    color: var(--brass-lo);
+    text-align: left;
+  }
+
+  /* ── Text responses ─────────────────────────────────────────────────────── */
+  .responses {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+  }
+  :global(.response-section) {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  :global(.response-label) {
+    font-family: var(--serif-display);
+    font-size: clamp(8px, 0.85vw, 10px);
+    letter-spacing: 0.45em;
+    color: var(--brass-lo);
+    padding-left: 0.45em;
+  }
+  :global(.response-item) {
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(14px, 1.5vw, 17px);
+    color: var(--brass-hi);
+    padding-left: 1.2em;
+    position: relative;
+    line-height: 1.5;
+  }
+  :global(.response-item::before) {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    font-size: 0.5em;
+    top: 0.4em;
+    color: var(--brass-lo);
+  }
+
+  @media (max-width: 480px) {
+    :global(.bar-row) { grid-template-columns: 5.5em 1fr 1.5em; }
+  }
+</style>
