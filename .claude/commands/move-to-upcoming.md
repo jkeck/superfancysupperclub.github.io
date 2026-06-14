@@ -18,27 +18,9 @@ Promote a wishlist restaurant to the upcoming dinner slot and generate its calen
    - `name`, `neighborhood`
 
 4. Compute derived values:
-   - ICS filename: `{slug}-{YYYY-MM}.ics` (slug from wishlist entry, YYYY-MM from the dinner date)
    - DTEND: DTSTART + 2 hours 30 minutes
 
-5. Write the ICS file to `public/events/{slug}-{YYYY-MM}.ics`:
-   ```
-   BEGIN:VCALENDAR
-   VERSION:2.0
-   PRODID:-//Super Fancy Supper Club//EN
-   CALSCALE:GREGORIAN
-   METHOD:PUBLISH
-   BEGIN:VEVENT
-   DTSTART:{YYYYMMDDTHHmmss}
-   DTEND:{YYYYMMDDTHHmmss}
-   SUMMARY:Super Fancy Supper Club · {name}
-   LOCATION:{full street address}
-   DESCRIPTION:{teaser}\n\nSee you there.
-   URL:https://superfancysupperclub.com/upcoming
-   END:VEVENT
-   END:VCALENDAR
-   ```
-   Note: escape commas in DESCRIPTION and LOCATION with `\,`.
+5. The ICS calendar invite is generated dynamically by `src/pages/events/upcoming.ics.ts` from `upcoming.json` at build time. **Do not create a static ICS file.** The endpoint automatically uses generic content (no restaurant name or address) when `secret: true`, and full details when `secret: false`.
 
 6. Overwrite `src/data/upcoming.json` with the single-object entry:
    ```json
@@ -48,13 +30,16 @@ Promote a wishlist restaurant to the upcoming dinner slot and generate its calen
      "teaser": "Teaser text",
      "secret": false,
      "neighborhood": "Neighborhood",
-     "ics_url": "/events/{slug}-{YYYY-MM}.ics",
+     "location": "123 Main St, City, CA 94000",
+     "ics_url": "/events/upcoming.ics",
      "website": "https://example.com",
      "lat": 37.0000,
      "lng": -122.0000
    }
    ```
-   Omit `website` if unknown. Set `lat`/`lng` to `null` if coordinates could not be determined (the map will not render).
+   - `location` is the full street address used in the calendar invite (only shown when not secret). Search for it if needed; omit if unknown.
+   - `ics_url` is always `/events/upcoming.ics` (the dynamic endpoint).
+   - Omit `website` if unknown. Set `lat`/`lng` to `null` if coordinates could not be determined (the map will not render).
 
 7. Remove the chosen restaurant from `src/data/wishlist.json` and write the file back.
 

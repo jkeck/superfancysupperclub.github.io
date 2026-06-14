@@ -165,6 +165,16 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
     syncDrawBtn();
   }
 
+  // Default to the 1st of next month
+  (function () {
+    const d = new Date();
+    d.setDate(1);
+    d.setMonth(d.getMonth() + 1);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    filterDate.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`;
+    applyDateFilter();
+  })();
+
   filterDate.addEventListener('change', applyDateFilter);
 
   // --- Remove toggle ---

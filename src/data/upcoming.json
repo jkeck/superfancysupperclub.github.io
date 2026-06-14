@@ -4,7 +4,8 @@
   "teaser": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
   "secret": false,
   "neighborhood": "Burlingame",
-  "ics_url": "/events/stella-2026-06.ics",
+  "location": "1448 Burlingame Ave, Burlingame, CA 94010",
+  "ics_url": "/events/upcoming.ics",
   "website": "https://stellaburlingame.com",
   "lat": 37.577517494246116,
   "lng": -122.34917141338138

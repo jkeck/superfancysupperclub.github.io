@@ -5,25 +5,32 @@ interface Props {
 const { date } = Astro.props;
 ---
 
-<div class="countdown" data-target={date}>
-  <div class="cd-unit">
-    <span class="cd-value" id="cd-days">––</span>
-    <span class="cd-label">DAYS</span>
+<div class="countdown" data-target={date} data-state="counting">
+  <div class="cd-ticker">
+    <div class="cd-unit">
+      <span class="cd-value" id="cd-days">––</span>
+      <span class="cd-label">DAYS</span>
+    </div>
+    <span class="cd-sep">·</span>
+    <div class="cd-unit">
+      <span class="cd-value" id="cd-hours">––</span>
+      <span class="cd-label">HRS</span>
+    </div>
+    <span class="cd-sep">·</span>
+    <div class="cd-unit">
+      <span class="cd-value" id="cd-mins">––</span>
+      <span class="cd-label">MIN</span>
+    </div>
+    <span class="cd-sep">·</span>
+    <div class="cd-unit">
+      <span class="cd-value" id="cd-secs">––</span>
+      <span class="cd-label">SEC</span>
+    </div>
   </div>
-  <span class="cd-sep">·</span>
-  <div class="cd-unit">
-    <span class="cd-value" id="cd-hours">––</span>
-    <span class="cd-label">HRS</span>
-  </div>
-  <span class="cd-sep">·</span>
-  <div class="cd-unit">
-    <span class="cd-value" id="cd-mins">––</span>
-    <span class="cd-label">MIN</span>
-  </div>
-  <span class="cd-sep">·</span>
-  <div class="cd-unit">
-    <span class="cd-value" id="cd-secs">––</span>
-    <span class="cd-label">SEC</span>
+  <div class="cd-now">HAPPENING NOW</div>
+  <div class="cd-soon">
+    <span class="cd-message-line">THE GATHERING HAS PASSED</span>
+    <span class="cd-message-sub">A new one is coming soon</span>
   </div>
 </div>
 
@@ -31,26 +38,28 @@ const { date } = Astro.props;
   const el = document.querySelector<HTMLElement>('.countdown');
   if (el) {
     const target = new Date(el.dataset.target!).getTime();
+    const HAPPENING_NOW_MS = 3 * 60 * 60 * 1000;
 
     function pad(n: number) { return String(n).padStart(2, '0'); }
 
     function tick() {
       const diff = target - Date.now();
-      if (diff <= 0) {
-        document.getElementById('cd-days')!.textContent = '00';
-        document.getElementById('cd-hours')!.textContent = '00';
-        document.getElementById('cd-mins')!.textContent = '00';
-        document.getElementById('cd-secs')!.textContent = '00';
-        return;
+
+      if (diff > 0) {
+        el.dataset.state = 'counting';
+        const days  = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const mins  = Math.floor((diff % 3600000) / 60000);
+        const secs  = Math.floor((diff % 60000) / 1000);
+        document.getElementById('cd-days')!.textContent  = String(days);
+        document.getElementById('cd-hours')!.textContent = pad(hours);
+        document.getElementById('cd-mins')!.textContent  = pad(mins);
+        document.getElementById('cd-secs')!.textContent  = pad(secs);
+      } else if (-diff < HAPPENING_NOW_MS) {
+        el.dataset.state = 'now';
+      } else {
+        el.dataset.state = 'soon';
       }
-      const days  = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const mins  = Math.floor((diff % 3600000) / 60000);
-      const secs  = Math.floor((diff % 60000) / 1000);
-      document.getElementById('cd-days')!.textContent  = String(days);
-      document.getElementById('cd-hours')!.textContent = pad(hours);
-      document.getElementById('cd-mins')!.textContent  = pad(mins);
-      document.getElementById('cd-secs')!.textContent  = pad(secs);
     }
 
     tick();
@@ -60,6 +69,22 @@ const { date } = Astro.props;
 
 <style>
   .countdown {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px, 3vw, 36px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* State-driven visibility — CSS owns this, not JS hidden attribute */
+  .countdown:not([data-state="counting"]) .cd-ticker,
+  .countdown:not([data-state="now"])      .cd-now,
+  .countdown:not([data-state="soon"])     .cd-soon {
+    display: none;
+  }
+
+  /* Ticker layout */
+  .cd-ticker {
     display: flex;
     align-items: center;
     gap: clamp(16px, 3vw, 36px);
@@ -95,5 +120,37 @@ const { date } = Astro.props;
     color: var(--brass-faint);
     align-self: flex-start;
     margin-top: 0.15em;
+  }
+
+  /* Post-event messages */
+  .cd-now {
+    font-family: var(--serif-display);
+    font-size: clamp(22px, 4.5vw, 52px);
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    color: var(--brass-hi);
+    text-align: center;
+    padding-left: 0.15em;
+  }
+  .cd-soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .cd-message-line {
+    font-family: var(--serif-display);
+    font-size: clamp(14px, 2.5vw, 26px);
+    letter-spacing: 0.2em;
+    color: var(--brass-lo);
+    text-align: center;
+    padding-left: 0.2em;
+  }
+  .cd-message-sub {
+    font-family: var(--serif-body);
+    font-style: italic;
+    font-size: clamp(15px, 1.8vw, 20px);
+    letter-spacing: 0.04em;
+    color: var(--brass-faint);
   }
 </style>
