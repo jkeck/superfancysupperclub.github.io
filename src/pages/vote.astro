@@ -104,7 +104,11 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       <div class="eyebrow">UNABLE TO CONNECT</div>
       <h1 class="vtitle">Something Went Wrong</h1>
       <p id="error-msg" class="hint error-hint"></p>
-      <a href="/vote" class="vbtn">TRY AGAIN</a>
+      <a href="/vote" id="btn-retry" class="vbtn">TRY AGAIN</a>
+    </div>
+
+    <div id="reconnect-banner" hidden>
+      <span id="reconnect-msg">Reconnecting…</span>
     </div>
 
   </main>
@@ -310,17 +314,17 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
   function startHostSession() {
     const code = randomCode();
     const peer = new (window as any).Peer(peerId(code));
-    const votes: VoteData[] = [];
+    const votes = new Map<string, VoteData>();
     const conns = new Set<any>();
     let hostSelected = 0;
 
     function updateTally() {
       const el = document.getElementById('vote-tally');
       if (!el) return;
-      const g = conns.size, v = votes.length;
+      const g = conns.size, v = votes.size;
       el.textContent = `${g} GUEST${g !== 1 ? 'S' : ''} CONNECTED · ${v} VOTE${v !== 1 ? 'S' : ''} RECEIVED`;
       const btn = document.getElementById('btn-reveal') as HTMLButtonElement | null;
-      if (btn) btn.disabled = votes.length === 0 && hostSelected === 0;
+      if (btn) btn.disabled = votes.size === 0 && hostSelected === 0;
     }
 
     peer.on('open', () => {
@@ -352,7 +356,8 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
 
       conn.on('data', (data: any) => {
         if (data?.type === 'vote' && typeof data.stars === 'number' && data.stars >= 1 && data.stars <= 5) {
-          votes.push({
+          const guestId = typeof data.guestId === 'string' && data.guestId ? data.guestId : `anon-${conn.peer}`;
+          votes.set(guestId, {
             stars:      data.stars,
             dishes:     typeof data.dishes     === 'string' ? data.dishes.trim().slice(0, 500)     : undefined,
             highlights: typeof data.highlights === 'string' ? data.highlights.trim().slice(0, 500) : undefined,
@@ -373,7 +378,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     });
 
     document.getElementById('btn-reveal')?.addEventListener('click', () => {
-      const allVotes = [...votes];
+      const allVotes = [...votes.values()];
       if (hostSelected > 0) {
         allVotes.push({
           stars:      hostSelected,
@@ -416,46 +421,79 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       return;
     }
 
+    const guestId = sessionStorage.getItem('sfsc-guest-id') ?? crypto.randomUUID();
+    sessionStorage.setItem('sfsc-guest-id', guestId);
+
     applyRestaurantContext();
     let receivedResults = false;
+    let lastVote: VoteData | null = null;
+    let reconnectAttempts = 0;
+    let currentConn: any = null;
+    let submitListenerAdded = false;
+    const MAX_RECONNECTS = 3;
+
+    function showReconnecting() {
+      const banner = document.getElementById('reconnect-banner');
+      const msg = document.getElementById('reconnect-msg');
+      if (msg) msg.textContent = `Reconnecting… (${reconnectAttempts}/${MAX_RECONNECTS})`;
+      if (banner) banner.hidden = false;
+    }
+
+    function hideReconnecting() {
+      const banner = document.getElementById('reconnect-banner');
+      if (banner) banner.hidden = true;
+    }
+
     const peer = new (window as any).Peer();
 
-    peer.on('open', () => {
-      const conn = peer.connect(peerId(code), { reliable: true });
+    function connect() {
+      currentConn = peer.connect(peerId(code), { reliable: true });
 
-      conn.on('open', () => {
-        show('s-guest-vote');
-        const { getSelected } = buildDiamonds('diamonds', 'diamond-label', n => {
-          const btn = document.getElementById('btn-submit') as HTMLButtonElement | null;
-          if (btn) btn.disabled = false;
-        });
+      currentConn.on('open', () => {
+        reconnectAttempts = 0;
+        hideReconnecting();
 
-        document.getElementById('btn-submit')?.addEventListener('click', () => {
-          const selected = getSelected();
-          if (!selected) return;
-
-          const dishes     = fieldVal('f-dishes');
-          const highlights = fieldVal('f-highlights');
-          const tips       = fieldVal('f-tips');
-
-          conn.send({ type: 'vote', stars: selected, dishes, highlights, tips });
-
-          // Show the voter their own submitted inputs
-          const sentEl = document.getElementById('sent-diamonds');
-          if (sentEl) sentEl.textContent = gems(selected);
-
-          const sentInputs = document.getElementById('sent-inputs');
-          if (sentInputs) {
-            const mine: VoteResponse = { dishes, highlights, tips };
-            const hasSome = dishes || highlights || tips;
-            if (hasSome) renderResponseList(sentInputs, [mine]);
-          }
-
+        if (lastVote) {
+          currentConn.send({ type: 'vote', guestId, ...lastVote });
           show('s-guest-sent');
-        });
+          return;
+        }
+
+        if (!submitListenerAdded) {
+          const { getSelected } = buildDiamonds('diamonds', 'diamond-label', n => {
+            const btn = document.getElementById('btn-submit') as HTMLButtonElement | null;
+            if (btn) btn.disabled = false;
+          });
+
+          document.getElementById('btn-submit')?.addEventListener('click', () => {
+            const selected = getSelected();
+            if (!selected) return;
+
+            const dishes     = fieldVal('f-dishes');
+            const highlights = fieldVal('f-highlights');
+            const tips       = fieldVal('f-tips');
+
+            lastVote = { stars: selected, dishes, highlights, tips };
+            currentConn.send({ type: 'vote', guestId, ...lastVote });
+
+            const sentEl = document.getElementById('sent-diamonds');
+            if (sentEl) sentEl.textContent = gems(selected);
+
+            const sentInputs = document.getElementById('sent-inputs');
+            if (sentInputs) {
+              const mine: VoteResponse = { dishes, highlights, tips };
+              if (dishes || highlights || tips) renderResponseList(sentInputs, [mine]);
+            }
+
+            show('s-guest-sent');
+          });
+          submitListenerAdded = true;
+        }
+
+        show('s-guest-vote');
       });
 
-      conn.on('data', (data: any) => {
+      currentConn.on('data', (data: any) => {
         if (data?.type === 'results') {
           receivedResults = true;
           peer.destroy();
@@ -469,8 +507,19 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
         }
       });
 
-      conn.on('close', () => { if (!receivedResults) showError('Connection to the host was lost.'); });
-    });
+      currentConn.on('close', () => {
+        if (receivedResults) return;
+        if (reconnectAttempts >= MAX_RECONNECTS) {
+          showError('Connection to the host was lost.');
+          return;
+        }
+        reconnectAttempts++;
+        showReconnecting();
+        setTimeout(connect, 2000);
+      });
+    }
+
+    peer.on('open', connect);
 
     peer.on('error', (err: any) => {
       peer.destroy();
@@ -482,6 +531,8 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
 
   // ── Boot ───────────────────────────────────────────────────────────────────
   if (joinCode) {
+    const retryBtn = document.getElementById('btn-retry') as HTMLAnchorElement | null;
+    if (retryBtn) retryBtn.href = `/vote?code=${joinCode}`;
     initGuest(joinCode);
   } else {
     initHost();
@@ -840,4 +891,21 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
   @media (max-width: 480px) {
     :global(.bar-row) { grid-template-columns: 5.5em 1fr 1.5em; }
   }
+
+  #reconnect-banner {
+    position: fixed;
+    bottom: clamp(20px, 4vh, 36px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green-mid);
+    border: 1px solid var(--brass-faint);
+    padding: 8px 20px;
+    font-family: var(--serif-display);
+    font-size: clamp(9px, 0.95vw, 11px);
+    letter-spacing: 0.3em;
+    color: var(--brass-lo);
+    white-space: nowrap;
+    z-index: 10;
+  }
+  #reconnect-banner[hidden] { display: none; }
 </style>
