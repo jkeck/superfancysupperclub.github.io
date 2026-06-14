@@ -1,21 +1,22 @@
 ---
 highlights:
-  - The patatas bravas were the best we've had outside of Spain
-  - An intimate room that felt festive rather than cramped
-  - The wine list punches well above its price point
+  - Has some of the best patatas bravas
+  - Small dining room, but doesn't feel cramped
 dishes:
-  - "Patatas Bravas: crispy, smoky, the aioli a revelation"
-  - "Pan Con Tomate: deceptively simple, deeply satisfying"
-  - "Gambas al Ajillo: garlicky, fiery, mopped up with every last piece of bread"
-  - "Croquetas de Jamón: pillowy, salty, criminally addictive"
+  - "Patatas Bravas: crispy, smoky, delicious aioli!"
+  - "Gnocchi: Rich, truffley, and the perfect touch of sage"
+  - "Paella: They have several to appease anybody's tastes"
 tips:
-  - Make a reservation — the dining room is small and fills quickly on weekends
-  - Order more than you think you need; the plates are generous but the company makes everything disappear
-  - Ask about the rotating wine specials; our server had excellent suggestions off-list
+  - Sit outside on a warm evening
+  - Plates are sharable, get more for the table than you think you'll need
+  - Paella for the table is a must
+
 ---
 
-Amour Amour arrived on our radar as the kind of place that looks like nothing much from the outside — a small storefront on B Street, a hand-lettered sign — and then envelops you the moment you step inside. The décor is warm and eccentric in the best sense: tiled floors, mismatched candleholders, walls hung with art that invites conversation rather than passive admiration. It felt, in other words, like exactly the kind of room in which one ought to eat small plates and drink Spanish wine.
+Amour Amour was the inaugural Super Fancy Supper Club. We were inspired to start this tradition under the influence of its delicious tapas. So if you’ve found your way to this site, you can thank Amour Amour. Like many of the restaurants we visit as part of Super Fancy Supper Club, Amour Amour is one that some of the group had already visited. It was a regular spot for two of us, and we were excited to share it with friends (a core tenet of this club).
 
-We had arrived with the cautious optimism of a group that has been burned before by tapas that turn out to be finger food with ambitions above its station. Amour Amour disabused us of that caution within the first five minutes. The patatas bravas landed first, as they should — blistered, yielding, the smoke worked deep into each cube — and we ate them before we had properly negotiated which bottles to order. The pan con tomate came next, tomato-bruised bread glazed with olive oil, and the gambas after that, a small cast-iron crock of prawns trembling in garlic and chilli that we passed around twice and still weren't ready to relinquish.
+One of the things that stands out about Amour Amour is the staff. The service is absolutely amazing, and even when the restaurant is busy, you are well taken care of. This may not be obvious on your first visit, but this is the kind of place where they remember you, often even after just one visit. They had remembered the two of us who had been before and welcomed us back every time we returned, making it feel like we were coming back to a familiar and comfortable place.
 
-What stays with us now, weeks on, is not any single plate but the accumulation of small pleasures: the server who knew when to refill and when to leave us to it, the way the room got louder and warmer as the evening progressed, the moment someone ordered the croquetas almost by accident and they turned out to be the best thing on the table. We left agreeing that the only mistake we made was not reserving sooner — and that we would not make the same mistake twice.
+The tapas-style dishes are perfect for sharing and conversing with friends. Everything was phenomenal. If you have a group, the paella is great for the table and provides a nice “main” to share. The crostini are a fun addition and offer a nice variety, particularly if you like truffle. You can’t really go wrong anywhere on the menu.
+
+We were so happy to be able to share this experience with friends, so much so that it started a tradition that continues to this day.

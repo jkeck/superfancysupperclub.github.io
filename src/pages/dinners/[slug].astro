@@ -69,7 +69,7 @@ const priceStr = '$'.repeat(dinner.price_range);
         <span class="sep">·</span>
         <span class="price" title={`Price range: ${dinner.price_range} of 4`}>{priceStr}</span>
         <span class="sep">·</span>
-        <span class="rating-item">
+        <span class="rating-item" title=`${RATING_PROVIDER} rating: ${dinner.external_rating}`>
           <span class="rating-label">{RATING_PROVIDER}</span>
           <StarRating rating={dinner.external_rating} size={13} label={RATING_PROVIDER} />
         </span>
@@ -85,11 +85,6 @@ const priceStr = '$'.repeat(dinner.price_range);
       </div>
     </header>
 
-    {dinner.lat && dinner.lng && (
-      <div class="map-section">
-        <DinnerMap name={dinner.name} lat={dinner.lat} lng={dinner.lng} neighborhood={dinner.neighborhood} />
-      </div>
-    )}
 
     <div class="dinner-body">
       <Content />
@@ -123,6 +118,12 @@ const priceStr = '$'.repeat(dinner.price_range);
           {entry.data.tips.map((t: string) => <li>{t}</li>)}
         </ul>
       </section>
+    )}
+
+    {dinner.lat && dinner.lng && (
+      <div class="map-section">
+        <DinnerMap name={dinner.name} lat={dinner.lat} lng={dinner.lng} neighborhood={dinner.neighborhood} />
+      </div>
     )}
   </main>
 </Base>
@@ -211,7 +212,7 @@ const priceStr = '$'.repeat(dinner.price_range);
   }
 
   .map-section {
-    margin-bottom: clamp(28px, 4vh, 48px);
+    margin-top: clamp(28px, 4vh, 48px);
   }
 
   .dinner-body {
