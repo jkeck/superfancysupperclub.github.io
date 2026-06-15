@@ -24,18 +24,6 @@
     "closed_days": [0, 1]
   },
   {
-    "slug": "village-pub",
-    "name": "The Village Pub",
-    "cuisine": "American",
-    "neighborhood": "Woodside",
-    "price_range": 4,
-    "external_rating": 4.1,
-    "added_by": "Jessie",
-    "notes": "High-end American eatery drawing a well-heeled clientele with gourmet seasonal fare & fine wines.",
-    "website": "https://www.thevillagepub.net",
-    "closed_days": []
-  },
-  {
     "slug": "all-spice",
     "name": "All Spice",
     "cuisine": "Californian",
@@ -70,5 +58,29 @@
     "notes": "Sushi bar & Yakitori in South San Mateo offering a modern spin on Japanese cuisine.",
     "website": "https://kodawarisushi.com",
     "closed_days": []
+  },
+  {
+    "slug": "mahasan",
+    "name": "Mahasan",
+    "cuisine": "Thai",
+    "neighborhood": "San Mateo",
+    "price_range": 2,
+    "external_rating": 4.2,
+    "added_by": "Davide",
+    "notes": "New Thai hotspot in downtown San Mateo serving scratch-made curries, shareable plates, and fresh ingredients with a focus on rich homemade sauces.",
+    "website": "https://www.mahasansanmateo.com",
+    "closed_days": []
+  },
+  {
+    "slug": "hana-izumi",
+    "name": "Hana Izumi",
+    "cuisine": "Japanese",
+    "neighborhood": "Millbrae",
+    "price_range": 4,
+    "external_rating": 4.8,
+    "added_by": "Davide",
+    "notes": "Traditional Japanese Kaiseki restaurant in Millbrae celebrating local seasonal ingredients with chef-driven omakase-style dining.",
+    "website": "https://www.hana-izumi.com",
+    "closed_days": [1, 2]
   }
 ]

@@ -83,5 +83,20 @@
     "notes": "A Mediterranean escape. A lush garden with live trees, water, and a citrus-cedar scent sets the tone for slow dinners and sun-lit brunch",
     "website": "https://www.amararestaurants.com",
     "photos": []
+  },
+  {
+    "slug": "stella-2026-06",
+    "name": "Stella",
+    "date": "2026-06-14",
+    "cuisine": "Italian",
+    "neighborhood": "Burlingame",
+    "lat": 37.577517494246116,
+    "lng": -122.34917141338138,
+    "price_range": 3,
+    "external_rating": 4.1,
+    "our_rating": 5,
+    "notes": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
+    "website": "https://stellaburlingame.com",
+    "photos": []
   }
 ]

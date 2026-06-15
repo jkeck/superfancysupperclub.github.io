@@ -1,12 +1,12 @@
 {
-  "name": "Stella",
-  "date": "2026-06-14T19:00:00",
-  "teaser": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
-  "secret": false,
-  "neighborhood": "Burlingame",
-  "location": "1448 Burlingame Ave, Burlingame, CA 94010",
+  "name": "The Village Pub",
+  "date": "2026-07-12T18:15:00",
+  "teaser": "Super Fancy Super Club's First Michelin Star, a High-end American Eatery in Woodside",
+  "secret": true,
+  "neighborhood": "Woodside",
+  "location": "2967 Woodside Rd, Woodside, CA 94062",
   "ics_url": "/events/upcoming.ics",
-  "website": "https://stellaburlingame.com",
-  "lat": 37.577517494246116,
-  "lng": -122.34917141338138
+  "website": "https://www.thevillagepub.net",
+  "lat": 37.42703,
+  "lng": -122.258469
 }
