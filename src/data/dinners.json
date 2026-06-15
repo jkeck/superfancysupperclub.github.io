@@ -97,6 +97,7 @@
     "our_rating": 5,
     "notes": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
     "website": "https://stellaburlingame.com",
-    "photos": []
+    "photos": [],
+    "published": true
   }
 ]
