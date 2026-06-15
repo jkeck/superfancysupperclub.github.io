@@ -317,6 +317,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     const votes = new Map<string, VoteData>();
     const conns = new Set<any>();
     let hostSelected = 0;
+    let hostInitialized = false;
 
     function updateTally() {
       const el = document.getElementById('vote-tally');
@@ -328,24 +329,27 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     }
 
     peer.on('open', () => {
-      const url = `${window.location.origin}/vote?code=${code}`;
+      if (!hostInitialized) {
+        hostInitialized = true;
+        const url = `${window.location.origin}/vote?code=${code}`;
 
-      const qrImg = document.getElementById('qr-img') as HTMLImageElement;
-      if (qrImg) {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&bgcolor=0e2419&color=c9a767&margin=2`;
+        const qrImg = document.getElementById('qr-img') as HTMLImageElement;
+        if (qrImg) {
+          qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&bgcolor=0e2419&color=c9a767&margin=2`;
+        }
+
+        const urlEl = document.getElementById('session-url') as HTMLAnchorElement;
+        if (urlEl) { urlEl.href = url; urlEl.textContent = url.replace(/^https?:\/\//, ''); }
+
+        show('s-host-active');
+        const codeEl = document.getElementById('code-val');
+        if (codeEl) codeEl.textContent = code;
+
+        buildDiamonds('host-diamonds', 'host-diamond-label', n => {
+          hostSelected = n;
+          updateTally();
+        });
       }
-
-      const urlEl = document.getElementById('session-url') as HTMLAnchorElement;
-      if (urlEl) { urlEl.href = url; urlEl.textContent = url.replace(/^https?:\/\//, ''); }
-
-      show('s-host-active');
-      const codeEl = document.getElementById('code-val');
-      if (codeEl) codeEl.textContent = code;
-
-      buildDiamonds('host-diamonds', 'host-diamond-label', n => {
-        hostSelected = n;
-        updateTally();
-      });
 
       updateTally();
     });
@@ -370,7 +374,13 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       conn.on('close', () => { conns.delete(conn); updateTally(); });
     });
 
-    peer.on('disconnected', () => { if (!peer.destroyed) peer.reconnect(); });
+    peer.on('disconnected', () => {
+      if (!peer.destroyed) {
+        const el = document.getElementById('vote-tally');
+        if (el) el.textContent = 'RECONNECTING TO SESSION…';
+        peer.reconnect();
+      }
+    });
 
     peer.on('error', (err: any) => {
       peer.destroy();
@@ -426,9 +436,15 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     const guestId = sessionStorage.getItem('sfsc-guest-id') ?? crypto.randomUUID();
     sessionStorage.setItem('sfsc-guest-id', guestId);
 
+    const VOTE_STORAGE_KEY = `sfsc-last-vote-${code}`;
+
     applyRestaurantContext();
     let receivedResults = false;
     let lastVote: VoteData | null = null;
+    try {
+      const stored = sessionStorage.getItem(VOTE_STORAGE_KEY);
+      if (stored) lastVote = JSON.parse(stored);
+    } catch {}
     let reconnectAttempts = 0;
     let currentConn: any = null;
     let submitListenerAdded = false;
@@ -448,16 +464,41 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
 
     const peer = new (window as any).Peer();
 
+    function showSent(vote: VoteData) {
+      const sentEl = document.getElementById('sent-diamonds');
+      if (sentEl) sentEl.textContent = gems(vote.stars);
+      const sentInputs = document.getElementById('sent-inputs');
+      if (sentInputs) {
+        const mine: VoteResponse = { dishes: vote.dishes, highlights: vote.highlights, tips: vote.tips };
+        if (vote.dishes || vote.highlights || vote.tips) renderResponseList(sentInputs, [mine]);
+      }
+      show('s-guest-sent');
+    }
+
     function connect() {
+      let attemptOpened = false;
       currentConn = peer.connect(peerId(code), { reliable: true });
 
+      const attemptTimer = setTimeout(() => {
+        if (attemptOpened) return;
+        if (reconnectAttempts >= MAX_RECONNECTS) {
+          showError('Connection to the host was lost.');
+          return;
+        }
+        reconnectAttempts++;
+        showReconnecting();
+        setTimeout(connect, 2000);
+      }, 8000);
+
       currentConn.on('open', () => {
+        attemptOpened = true;
+        clearTimeout(attemptTimer);
         reconnectAttempts = 0;
         hideReconnecting();
 
         if (lastVote) {
           currentConn.send({ type: 'vote', guestId, ...lastVote });
-          show('s-guest-sent');
+          showSent(lastVote);
           return;
         }
 
@@ -476,18 +517,9 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
             const tips       = fieldVal('f-tips');
 
             lastVote = { stars: selected, dishes, highlights, tips };
+            sessionStorage.setItem(VOTE_STORAGE_KEY, JSON.stringify(lastVote));
             currentConn.send({ type: 'vote', guestId, ...lastVote });
-
-            const sentEl = document.getElementById('sent-diamonds');
-            if (sentEl) sentEl.textContent = gems(selected);
-
-            const sentInputs = document.getElementById('sent-inputs');
-            if (sentInputs) {
-              const mine: VoteResponse = { dishes, highlights, tips };
-              if (dishes || highlights || tips) renderResponseList(sentInputs, [mine]);
-            }
-
-            show('s-guest-sent');
+            showSent(lastVote);
           });
           submitListenerAdded = true;
         }
@@ -498,6 +530,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       currentConn.on('data', (data: any) => {
         if (data?.type === 'results') {
           receivedResults = true;
+          sessionStorage.removeItem(VOTE_STORAGE_KEY);
           peer.destroy();
           renderResults(
             document.getElementById('guest-avg')!,
@@ -510,6 +543,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       });
 
       currentConn.on('close', () => {
+        clearTimeout(attemptTimer);
         if (receivedResults) return;
         if (reconnectAttempts >= MAX_RECONNECTS) {
           showError('Connection to the host was lost.');
