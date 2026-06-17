@@ -49,6 +49,12 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
           <label class="field-label" for="hf-tips">PRO TIPS</label>
           <textarea id="hf-tips" class="field-input" rows="2" placeholder="Advice for next time?"></textarea>
         </div>
+        <button id="btn-lock" class="vbtn" disabled>LOCK IN MY VOTE</button>
+      </div>
+
+      <div id="host-vote-locked" hidden>
+        <div class="host-vote-eyebrow">YOUR VOTE IS LOCKED IN</div>
+        <div id="host-locked-gems" class="sent-diamonds"></div>
       </div>
 
       <div id="vote-tally" class="tally">WAITING FOR GUESTS</div>
@@ -63,6 +69,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       <div id="host-bars" class="bars"></div>
       <div id="host-responses" class="responses"></div>
       <button id="btn-new" class="vbtn">START NEW SESSION</button>
+      <button id="btn-download" class="vbtn">DOWNLOAD RESULTS</button>
     </div>
 
     <div id="s-guest-vote" class="vstate" hidden>
@@ -197,6 +204,43 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     return (document.getElementById(id) as HTMLTextAreaElement)?.value.trim() || undefined;
   }
 
+  function generateMarkdown(results: Results, name: string | null, date: string | null): string {
+    const lines: string[] = ['---'];
+
+    if (results.average > 0) {
+      lines.push(`our_rating: ${results.average.toFixed(1)}`);
+    }
+
+    function yamlItem(s: string): string {
+      const needsQuote = /[:#\[\]{}&*!|>'"%@`]/.test(s) || s.startsWith('-') || s.startsWith(' ');
+      if (!needsQuote) return `  - ${s}`;
+      return `  - "${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+    }
+
+    const sections: { key: keyof VoteResponse; label: string }[] = [
+      { key: 'highlights', label: 'highlights' },
+      { key: 'dishes',     label: 'dishes' },
+      { key: 'tips',       label: 'tips' },
+    ];
+
+    for (const { key, label } of sections) {
+      const items = results.responses.map(r => r[key]?.trim()).filter((v): v is string => !!v);
+      if (items.length) {
+        lines.push(`${label}:`);
+        items.forEach(item => lines.push(yamlItem(item)));
+      }
+    }
+
+    lines.push('---');
+    lines.push('');
+
+    const meta = [name, date].filter(Boolean).join(' · ');
+    if (meta) lines.push(`<!-- ${meta} · ${results.average.toFixed(1)}/5 · ${results.total} vote${results.total !== 1 ? 's' : ''} -->`);
+    lines.push('');
+
+    return lines.join('\n');
+  }
+
   // ── Shared: build interactive diamond rating ───────────────────────────────
   function buildDiamonds(containerId: string, labelId: string, onSelect: (n: number) => void) {
     const container = document.getElementById(containerId)!;
@@ -318,6 +362,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     const conns = new Set<any>();
     let hostSelected = 0;
     let hostInitialized = false;
+    let hostVote: { stars: number; dishes?: string; highlights?: string; tips?: string } | null = null;
 
     function updateTally() {
       const el = document.getElementById('vote-tally');
@@ -325,7 +370,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
       const g = conns.size, v = votes.size;
       el.textContent = `${g} GUEST${g !== 1 ? 'S' : ''} CONNECTED · ${v} VOTE${v !== 1 ? 'S' : ''} RECEIVED`;
       const btn = document.getElementById('btn-reveal') as HTMLButtonElement | null;
-      if (btn) btn.disabled = votes.size === 0 && hostSelected === 0;
+      if (btn) btn.disabled = votes.size === 0 && hostVote === null;
     }
 
     peer.on('open', () => {
@@ -347,6 +392,25 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
 
         buildDiamonds('host-diamonds', 'host-diamond-label', n => {
           hostSelected = n;
+          const btnLock = document.getElementById('btn-lock') as HTMLButtonElement | null;
+          if (btnLock) btnLock.disabled = false;
+          updateTally();
+        });
+
+        document.getElementById('btn-lock')?.addEventListener('click', () => {
+          if (!hostSelected) return;
+          hostVote = {
+            stars:      hostSelected,
+            dishes:     fieldVal('hf-dishes'),
+            highlights: fieldVal('hf-highlights'),
+            tips:       fieldVal('hf-tips'),
+          };
+          const voteSection = document.querySelector<HTMLElement>('.host-vote-section');
+          if (voteSection) voteSection.hidden = true;
+          const lockedEl = document.getElementById('host-vote-locked');
+          if (lockedEl) lockedEl.hidden = false;
+          const gemsEl = document.getElementById('host-locked-gems');
+          if (gemsEl) gemsEl.textContent = '◆'.repeat(hostVote.stars) + '◇'.repeat(5 - hostVote.stars);
           updateTally();
         });
       }
@@ -391,13 +455,8 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
 
     document.getElementById('btn-reveal')?.addEventListener('click', () => {
       const allVotes = [...votes.values()];
-      if (hostSelected > 0) {
-        allVotes.push({
-          stars:      hostSelected,
-          dishes:     fieldVal('hf-dishes'),
-          highlights: fieldVal('hf-highlights'),
-          tips:       fieldVal('hf-tips'),
-        });
+      if (hostVote) {
+        allVotes.push(hostVote);
       }
 
       const total = allVotes.length;
@@ -419,6 +478,26 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
         results,
       );
       show('s-host-results');
+
+      const btnDownload = document.getElementById('btn-download') as HTMLButtonElement | null;
+      if (btnDownload) {
+        btnDownload.addEventListener('click', () => {
+          const md = generateMarkdown(results, active?.name ?? null, active?.date ?? null);
+          const blob = new Blob([md], { type: 'text/markdown' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const slug = (active?.name ?? 'dinner')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '');
+          a.download = `${slug}-results.md`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        });
+      }
     });
 
     document.getElementById('btn-new')?.addEventListener('click', () => { window.location.href = '/vote'; });
@@ -710,6 +789,7 @@ const restaurant = !(upcoming.secret as boolean) ? JSON.stringify({
     padding-top: clamp(14px, 2vh, 22px);
     border-top: 1px solid var(--brass-faint);
   }
+  .host-vote-section[hidden] { display: none; }
   .host-vote-eyebrow {
     font-family: var(--serif-display);
     font-size: clamp(9px, 0.95vw, 11px);
