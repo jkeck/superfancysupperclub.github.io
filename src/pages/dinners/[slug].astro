@@ -122,6 +122,20 @@ const priceStr = '$'.repeat(dinner.price_range);
       </section>
     )}
 
+    {dinner.photos && dinner.photos.length > 0 && (
+      <section class="gallery-section">
+        <hr class="brass-rule" />
+        <h2 class="section-title">PHOTOS</h2>
+        <div class="gallery">
+          {dinner.photos.map((src, i) => (
+            <a href={src} target="_blank" rel="noopener" class="gallery-item" aria-label={`Photo ${i + 1} of ${dinner.photos.length}`}>
+              <img src={src} alt={`${dinner.name} — photo ${i + 1}`} loading="lazy" decoding="async" />
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
     {dinner.lat && dinner.lng && (
       <hr class="brass-rule" />
       <div class="map-section">
@@ -213,6 +227,33 @@ const priceStr = '$'.repeat(dinner.price_range);
     color: var(--brass-lo);
     text-transform: uppercase;
   }
+
+  .gallery-section {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 1.5vh, 18px);
+  }
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+  }
+  .gallery-item {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--brass-faint);
+    aspect-ratio: 4 / 3;
+    transition: border-color 0.15s;
+  }
+  .gallery-item:hover { border-color: var(--brass-lo); }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.15s;
+  }
+  .gallery-item:hover img { opacity: 0.88; }
 
   .map-section {
     margin-top: clamp(20px, 3vh, 40px);
