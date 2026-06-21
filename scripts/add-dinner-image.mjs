@@ -11,9 +11,10 @@
  */
 
 import { createRequire } from 'module';
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from 'fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, unlinkSync } from 'fs';
 import { resolve, basename, extname } from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
 const require = createRequire(import.meta.url);
 const sharp = require('sharp');
@@ -91,10 +92,22 @@ for (const imgPath of imagePaths) {
 
   process.stdout.write(`  ${basename(src)} → ${publicPath} … `);
 
-  await sharp(src)
+  // HEIC files can exceed libvips' iref security limit; pre-convert via sips.
+  let sharpSrc = src;
+  let tmpJpeg = null;
+  if (extname(src).toLowerCase() === '.heic') {
+    tmpJpeg = src.replace(/\.heic$/i, '.tmp.jpg');
+    execFileSync('sips', ['-s', 'format', 'jpeg', src, '--out', tmpJpeg], { stdio: 'pipe' });
+    sharpSrc = tmpJpeg;
+  }
+
+  await sharp(sharpSrc)
+    .rotate()
     .resize({ width: maxWidth, withoutEnlargement: true })
     .webp({ quality })
     .toFile(outFile);
+
+  if (tmpJpeg) unlinkSync(tmpJpeg);
 
   const { size: inSize } = (await import('fs')).statSync(src);
   const { size: outSize } = (await import('fs')).statSync(outFile);
