@@ -98,13 +98,13 @@
     "notes": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
     "website": "https://stellaburlingame.com",
     "photos": [
-      "/images/dinners/stella-2026-06/1.webp",
-      "/images/dinners/stella-2026-06/3.webp",
-      "/images/dinners/stella-2026-06/2.webp",
-      "/images/dinners/stella-2026-06/7.webp",
-      "/images/dinners/stella-2026-06/4.webp",
-      "/images/dinners/stella-2026-06/5.webp",
-      "/images/dinners/stella-2026-06/6.webp"
+      { "src": "/images/dinners/stella-2026-06/1.webp", "caption": "\"The Fish Market\" Cheesy Garlic Bread" },
+      { "src": "/images/dinners/stella-2026-06/3.webp", "caption": "Heirloom Burrata Caprese" },
+      { "src": "/images/dinners/stella-2026-06/2.webp", "caption": "Truffle Stuffed Gnocchi" },
+      { "src": "/images/dinners/stella-2026-06/7.webp", "caption": "Pear & Tallegio Stuffed Pasta Purses" },
+      { "src": "/images/dinners/stella-2026-06/4.webp", "caption": "Crème Brulèe" },
+      { "src": "/images/dinners/stella-2026-06/5.webp", "caption": "Bread Pudding" },
+      { "src": "/images/dinners/stella-2026-06/6.webp", "caption": "Tiramisu" }
     ],
     "published": true
   }

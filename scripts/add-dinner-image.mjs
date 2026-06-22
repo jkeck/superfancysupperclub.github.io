@@ -83,7 +83,7 @@ function nextIndex() {
 // ── Process images ───────────────────────────────────────────────────────────
 
 let idx = nextIndex();
-const addedPaths = [];
+const addedPhotoObjects = [];
 
 for (const imgPath of imagePaths) {
   const src = resolve(imgPath);
@@ -114,18 +114,18 @@ for (const imgPath of imagePaths) {
   const pct = Math.round((1 - outSize / inSize) * 100);
   console.log(`done (${kb(inSize)} → ${kb(outSize)}, ${pct > 0 ? '-' : '+'}${Math.abs(pct)}%)`);
 
-  addedPaths.push(publicPath);
+  addedPhotoObjects.push({ "src": publicPath, "caption": "" });
   idx++;
 }
 
 // ── Update dinners.json ───────────────────────────────────────────────────────
 
 if (!Array.isArray(dinner.photos)) dinner.photos = [];
-dinner.photos.push(...addedPaths);
+dinner.photos.push(...addedPhotoObjects);
 dinners[dinnerIdx] = dinner;
 writeFileSync(DINNERS_JSON, JSON.stringify(dinners, null, 2) + '\n', 'utf8');
 
-console.log(`\nAdded ${addedPaths.length} photo(s) to "${dinner.name}" (${dinnerSlug})`);
+console.log(`\nAdded ${addedPhotoObjects.length} photo(s) to "${dinner.name}" (${dinnerSlug})`);
 console.log(`dinners.json photos[]:`, dinner.photos);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

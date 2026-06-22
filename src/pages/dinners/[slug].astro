@@ -127,9 +127,9 @@ const priceStr = '$'.repeat(dinner.price_range);
         <hr class="brass-rule" />
         <h2 class="section-title">PHOTOS</h2>
         <div class="gallery" id="photo-gallery" data-photos={JSON.stringify(dinner.photos)} data-name={dinner.name}>
-          {dinner.photos.map((src, i) => (
+          {dinner.photos.map((photo, i) => (
             <button class="gallery-item" data-index={i} aria-label={`Open photo ${i + 1} of ${dinner.photos.length}`}>
-              <img src={src} alt={`${dinner.name} — ${i + 1} of ${dinner.photos.length}`} loading="lazy" decoding="async" />
+              <img src={photo.src} alt={`${photo.caption}`} loading="lazy" decoding="async" />
             </button>
           ))}
         </div>
@@ -140,11 +140,12 @@ const priceStr = '$'.repeat(dinner.price_range);
       <div class="lightbox-backdrop"></div>
       <button class="lightbox-close" aria-label="Close photo viewer">✕</button>
       <button class="lightbox-nav lightbox-prev" aria-label="Previous photo">&#8249;</button>
+      <div class="lightbox-details lightbox-caption" id="lightbox-caption"></div>
       <div class="lightbox-stage">
         <img id="lightbox-img" src="" alt="" />
       </div>
       <button class="lightbox-nav lightbox-next" aria-label="Next photo">&#8250;</button>
-      <div class="lightbox-counter" id="lightbox-counter"></div>
+      <div class="lightbox-details lightbox-counter" id="lightbox-counter"></div>
     </div>
 
     {dinner.lat && dinner.lng && (
@@ -362,9 +363,8 @@ const priceStr = '$'.repeat(dinner.price_range);
     }
   }
 
-  .lightbox-counter {
+  .lightbox-details {
     position: absolute;
-    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -376,8 +376,17 @@ const priceStr = '$'.repeat(dinner.price_range);
     white-space: nowrap;
   }
 
+  .lightbox-caption {
+    top: 24px;
+  }
+
+  .lightbox-counter {
+    bottom: 23px;
+  }
+
   .map-section {
     margin-top: clamp(20px, 3vh, 40px);
+    z-index: 0;
   }
 
   .dinner-body {
@@ -443,6 +452,7 @@ const priceStr = '$'.repeat(dinner.price_range);
     const name: string = gallery.dataset.name || '';
     const lightbox = document.getElementById('lightbox') as HTMLElement;
     const img = document.getElementById('lightbox-img') as HTMLImageElement;
+    const caption = document.getElementById('lightbox-caption') as HTMLElement;
     const counter = document.getElementById('lightbox-counter') as HTMLElement;
     const prevBtn = lightbox.querySelector('.lightbox-prev') as HTMLButtonElement;
     const nextBtn = lightbox.querySelector('.lightbox-next') as HTMLButtonElement;
@@ -453,8 +463,9 @@ const priceStr = '$'.repeat(dinner.price_range);
 
     function show(index: number) {
       current = (index + photos.length) % photos.length;
-      img.src = photos[current];
-      img.alt = `${name} — photo ${current + 1}`;
+      img.src = photos[current].src;
+      img.alt = photos[current].caption;
+      caption.textContent = photos[current].caption
       counter.textContent = `${current + 1} / ${photos.length}`;
       prevBtn.hidden = photos.length <= 1;
       nextBtn.hidden = photos.length <= 1;

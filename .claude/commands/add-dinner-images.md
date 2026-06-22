@@ -15,12 +15,14 @@ Compress and import one or more photos for a dinner entry. Converts to WebP, res
    The script will:
    - Convert each image to WebP at quality 82, max 1400px wide
    - Save to `public/images/dinners/<slug>/1.webp`, `2.webp`, etc. (auto-incrementing)
-   - Append the public paths to that dinner's `photos[]` in `dinners.json`
+   - Append the public paths to that dinner's `photos[]` in `dinners.json` in a new object like: `{ "src": "{PUBLIC_PATH}", "caption": "" }`
    - Print the before/after file sizes for each image
 
-4. Report what was added: list each output path and the updated `photos[]` array for the dinner.
+4. For any entries added that have an empty caption, prompt the user for the caption for that photo, and update the dinners.json appropriately. Offer to open the file for the user (and provide the path).  If no caption is provided keep the empty string and move on.
 
-5. Ask: "Want to commit these images now?" If yes, stage `public/images/dinners/<slug>/` and `src/data/dinners.json` and create a commit with message: `Add photos for <Dinner Name>`.
+5. Report what was added: list each output path and the updated `photos[]` array for the dinner.
+
+6. Ask: "Want to commit these images now?" If yes, stage `public/images/dinners/<slug>/` and `src/data/dinners.json` and create a commit with message: `Add photos for <Dinner Name>`.
 
 ## Options
 
