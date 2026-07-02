@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import dinners from '../data/dinners.json';
 import upcoming from '../data/upcoming.json';
+import taglines from '../data/taglines.json';
 
 const sorted = [...dinners].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 const last = sorted[0];
@@ -45,9 +46,17 @@ const fmtShort = (d: string) =>
       <h1 class="title">SUPPER CLUB</h1>
     </div>
 
-    <p class="tagline">
-      A roving dinner club for people who said yes to dessert and then yes to a digestif.
+    <p class="tagline" id="tagline">
+      {taglines[0]}
     </p>
+    <script define:vars={{ taglines }}>
+      if (taglines.length > 1) {
+        const el = document.getElementById('tagline');
+        if (el) {
+          el.textContent = taglines[Math.floor(Math.random() * taglines.length)];
+        }
+      }
+    </script>
 
     <div class="teasers">
       <a href="/upcoming" class="teaser">
