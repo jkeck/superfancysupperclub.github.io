@@ -46,9 +46,53 @@ const fmtDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
 const priceStr = '$'.repeat(dinner.price_range);
+
+const description = dinner.notes
+  ? `${dinner.name} (${dinner.neighborhood}): ${dinner.notes}`
+  : `Our review of ${dinner.name}, a ${dinner.cuisine} restaurant in ${dinner.neighborhood}.`;
+
+const pageURL = new URL(`/dinners/${dinner.slug}/`, Astro.site).href;
+const ogImage = dinner.photos?.[0] ? new URL(dinner.photos[0].src, Astro.site).href : undefined;
+
+const reviewRating = dinner.our_rating ?? dinner.external_rating;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Review',
+  name: `${dinner.name} Review`,
+  itemReviewed: {
+    '@type': 'Restaurant',
+    name: dinner.name,
+    servesCuisine: dinner.cuisine,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: dinner.neighborhood,
+      addressRegion: 'CA',
+    },
+    ...(dinner.lat && dinner.lng
+      ? { geo: { '@type': 'GeoCoordinates', latitude: dinner.lat, longitude: dinner.lng } }
+      : {}),
+    ...(dinner.website ? { url: dinner.website } : {}),
+    priceRange: '$'.repeat(dinner.price_range),
+  },
+  reviewRating: {
+    '@type': 'Rating',
+    ratingValue: reviewRating,
+    bestRating: 5,
+  },
+  author: {
+    '@type': 'Organization',
+    name: 'Super Fancy Supper Club',
+    url: 'https://superfancysupperclub.com',
+  },
+  datePublished: dinner.date,
+  url: pageURL,
+};
 ---
 
-<Base title={`${dinner.name} · Super Fancy Supper Club`} activeNav="past-dinners">
+<Base title={`${dinner.name} · Super Fancy Supper Club`} description={description} image={ogImage} activeNav="past-dinners">
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </Fragment>
   <main>
     <nav class="breadcrumb">
       <a href="/past-dinners" class="back-link">← Past Dinners</a>
@@ -129,7 +173,7 @@ const priceStr = '$'.repeat(dinner.price_range);
         <div class="gallery" id="photo-gallery" data-photos={JSON.stringify(dinner.photos)} data-name={dinner.name}>
           {dinner.photos.map((photo, i) => (
             <button class="gallery-item" data-index={i} aria-label={`Open photo ${i + 1} of ${dinner.photos.length}`}>
-              <img src={photo.src} alt={`${photo.caption}`} loading="lazy" decoding="async" />
+              <img src={photo.src} alt={`${photo.caption} at ${dinner.name}`} loading="lazy" decoding="async" />
             </button>
           ))}
         </div>

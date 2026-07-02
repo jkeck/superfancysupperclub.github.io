@@ -7,13 +7,17 @@ interface Props {
   description?: string;
   activeNav?: string;
   headExtra?: string;
+  image?: string;
 }
 
 const {
   title,
   description = 'An itinerant feast through the Bay Area Peninsula.',
   activeNav,
+  image = 'https://superfancysupperclub.com/favicons/wax-seal-512.png',
 } = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
@@ -23,12 +27,13 @@ const {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  <link rel="canonical" href={canonicalURL} />
 
   <meta property="og:title" content={title} />
   <meta property="og:description" content={description} />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://superfancysupperclub.com" />
-  <meta property="og:image" content="https://superfancysupperclub.com/favicons/wax-seal-512.png" />
+  <meta property="og:url" content={canonicalURL} />
+  <meta property="og:image" content={image} />
   <meta name="theme-color" content="#0e2419" />
 
   <link rel="icon" type="image/svg+xml" href="/favicons/wax-seal.svg" />
