@@ -107,5 +107,21 @@
       { "src": "/images/dinners/stella-2026-06/6.webp", "caption": "Tiramisu" }
     ],
     "published": true
+  },
+  {
+    "slug": "the-village-pub-2026-07",
+    "name": "The Village Pub",
+    "date": "2026-07-12",
+    "cuisine": "Contemporary American",
+    "neighborhood": "Woodside",
+    "lat": 37.42896318944308,
+    "lng": -122.25157422791702,
+    "price_range": 4,
+    "external_rating": 4.5,
+    "our_rating": 5,
+    "notes": "Super Fancy Supper Club's first Michelin-starred dinner. An upscale American cuisine in a charming Woodside setting, awarded one Michelin star since 2009.",
+    "website": "https://www.thevillagepub.net",
+    "photos": [],
+    "published": true
   }
 ]

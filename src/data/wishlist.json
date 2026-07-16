@@ -48,18 +48,6 @@
     "closed_days": []
   },
   {
-    "slug": "kodawari",
-    "name": "Kodawari Japanese Cuisine",
-    "cuisine": "Japenese",
-    "neighborhood": "San Mateo",
-    "price_range": 3,
-    "external_rating": 4.2,
-    "added_by": "Davide",
-    "notes": "Sushi bar & Yakitori in South San Mateo offering a modern spin on Japanese cuisine.",
-    "website": "https://kodawarisushi.com",
-    "closed_days": []
-  },
-  {
     "slug": "mahasan",
     "name": "Mahasan",
     "cuisine": "Thai",

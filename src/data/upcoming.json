@@ -1,12 +1,12 @@
 {
-  "name": "The Village Pub",
-  "date": "2026-07-12T18:15:00",
-  "teaser": "Super Fancy Super Club's First Michelin Star, a High-end American Eatery in Woodside",
+  "name": "Kodawari Japanese Cuisine",
+  "date": "2026-08-23T18:30:00",
+  "teaser": "Omakase, yakitori, and a chef who takes his craft (kodawari) very seriously",
   "secret": false,
-  "neighborhood": "Woodside",
-  "location": "2967 Woodside Rd, Woodside, CA 94062",
+  "neighborhood": "San Mateo",
+  "location": "32 42nd Ave, San Mateo, CA 94403",
   "ics_url": "/events/upcoming.ics",
-  "website": "https://www.thevillagepub.net",
-  "lat": 37.42896318944308,
-  "lng": -122.25157422791702
+  "website": "https://kodawarisushi.com",
+  "lat": 37.530182667165356,
+  "lng": -122.29028720061093
 }
