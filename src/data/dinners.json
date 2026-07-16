@@ -98,13 +98,34 @@
     "notes": "Sophisticated neighborhood osteria serves rustic Northern Italian cuisine in a romantic atmosphere.",
     "website": "https://stellaburlingame.com",
     "photos": [
-      { "src": "/images/dinners/stella-2026-06/1.webp", "caption": "\"The Fish Market\" Cheesy Garlic Bread" },
-      { "src": "/images/dinners/stella-2026-06/3.webp", "caption": "Heirloom Burrata Caprese" },
-      { "src": "/images/dinners/stella-2026-06/2.webp", "caption": "Truffle Stuffed Gnocchi" },
-      { "src": "/images/dinners/stella-2026-06/7.webp", "caption": "Pear & Tallegio Stuffed Pasta Purses" },
-      { "src": "/images/dinners/stella-2026-06/4.webp", "caption": "Crème Brûlée" },
-      { "src": "/images/dinners/stella-2026-06/5.webp", "caption": "Bread Pudding" },
-      { "src": "/images/dinners/stella-2026-06/6.webp", "caption": "Tiramisu" }
+      {
+        "src": "/images/dinners/stella-2026-06/1.webp",
+        "caption": "\"The Fish Market\" Cheesy Garlic Bread"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/3.webp",
+        "caption": "Heirloom Burrata Caprese"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/2.webp",
+        "caption": "Truffle Stuffed Gnocchi"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/7.webp",
+        "caption": "Pear & Tallegio Stuffed Pasta Purses"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/4.webp",
+        "caption": "Crème Brûlée"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/5.webp",
+        "caption": "Bread Pudding"
+      },
+      {
+        "src": "/images/dinners/stella-2026-06/6.webp",
+        "caption": "Tiramisu"
+      }
     ],
     "published": true
   },
@@ -121,7 +142,72 @@
     "our_rating": 5,
     "notes": "Super Fancy Supper Club's first Michelin-starred dinner. An upscale American cuisine in a charming Woodside setting, awarded one Michelin star since 2009.",
     "website": "https://www.thevillagepub.net",
-    "photos": [],
+    "photos": [
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/1.webp",
+        "caption": "Dinner Beverages"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/2.webp",
+        "caption": "Canapés"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/3.webp",
+        "caption": "Parker Rolls"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/4.webp",
+        "caption": "Trout Escabeche"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/5.webp",
+        "caption": "Heirloom Cucumber Macédoine"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/6.webp",
+        "caption": "Egg Yolk Raviolo"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/7.webp",
+        "caption": "Monterey Bay Abalone"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/8.webp",
+        "caption": "Caramelized Black Cod"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/9.webp",
+        "caption": "Risotto Verde"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/10.webp",
+        "caption": "Dry-Aged Duck Breast"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/11.webp",
+        "caption": "Gâteau aux Fraises"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/12.webp",
+        "caption": "Beignets"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/13.webp",
+        "caption": "Chocoloate Soufflé"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/14.webp",
+        "caption": "Farmstead Cheeses"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/15.webp",
+        "caption": "Jellys"
+      },
+      {
+        "src": "/images/dinners/the-village-pub-2026-07/16.webp",
+        "caption": "Sunset Drive Home"
+      }
+    ],
     "published": true
   }
 ]
