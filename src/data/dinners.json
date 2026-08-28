@@ -209,5 +209,78 @@
       }
     ],
     "published": true
+  },
+  {
+    "slug": "kodawari-japanese-cuisine-2026-08",
+    "name": "Kodawari Japanese Cuisine",
+    "date": "2026-08-23",
+    "cuisine": "Japanese",
+    "neighborhood": "San Mateo",
+    "lat": 37.530182667165356,
+    "lng": -122.29028720061093,
+    "price_range": 3,
+    "external_rating": 4.3,
+    "our_rating": 4.6,
+    "notes": "Omakase, yakitori, and a chef who takes his craft (kodawari) very seriously.",
+    "website": "https://kodawarisushi.com",
+    "photos": [
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/1.webp",
+        "caption": "Chicken Katsu"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/2.webp",
+        "caption": "Miso Soup and Side Salad"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/3.webp",
+        "caption": "Sushi Roll"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/4.webp",
+        "caption": "Tamago"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/5.webp",
+        "caption": "Part of the Otsumami Box"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/6.webp",
+        "caption": "Custard"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/7.webp",
+        "caption": "Roe over Rice"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/8.webp",
+        "caption": "Oyster Half-Shell with Roe"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/9.webp",
+        "caption": "Otsumami Box 1"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/10.webp",
+        "caption": "Part of the Otsumami Box"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/12.webp",
+        "caption": "Close-up of a Dish in the Otsumami Box"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/13.webp",
+        "caption": "Another Part of the Otsumami Box"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/14.webp",
+        "caption": "Katsudon"
+      },
+      {
+        "src": "/images/dinners/kodawari-japanese-cuisine-2026-08/15.webp",
+        "caption": "Chirashi Assortment"
+      }
+    ],
+    "published": true
   }
 ]

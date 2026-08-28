@@ -1,12 +1,12 @@
 {
-  "name": "Kodawari Japanese Cuisine",
-  "date": "2026-08-23T18:30:00",
-  "teaser": "Omakase, yakitori, and a chef who takes his craft (kodawari) very seriously",
+  "name": "Hurrica",
+  "date": "2026-10-10T18:30:00",
+  "teaser": "Batten down the hatches, dinner's got harbor views and hearth-fired heat.",
   "secret": false,
-  "neighborhood": "San Mateo",
-  "location": "32 42nd Ave, San Mateo, CA 94403",
+  "neighborhood": "Redwood City",
+  "location": "150 Northpoint Ct, Redwood City, CA 94063",
   "ics_url": "/events/upcoming.ics",
-  "website": "https://kodawarisushi.com",
-  "lat": 37.530182667165356,
-  "lng": -122.29028720061093
+  "website": "https://www.hurrica.restaurant",
+  "lat": 37.512768,
+  "lng": -122.194191
 }

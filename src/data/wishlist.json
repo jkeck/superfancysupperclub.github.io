@@ -36,18 +36,6 @@
     "closed_days": [0, 1]
   },
   {
-    "slug": "hurrica",
-    "name": "Hurrica",
-    "cuisine": "Californian",
-    "neighborhood": "Redwood City",
-    "price_range": 4,
-    "external_rating": 4.5,
-    "added_by": "Davide",
-    "notes": "Beautiful restaurant featuring hearth-fired seasonal eats, a full bar and harbor views.",
-    "website": "https://www.hurrica.restaurant",
-    "closed_days": []
-  },
-  {
     "slug": "mahasan",
     "name": "Mahasan",
     "cuisine": "Thai",
@@ -81,6 +69,18 @@
     "added_by": "Davide",
     "notes": "New American Bistro Restaurant and Bar",
     "website": "https://crystalspringstavern.com",
+    "closed_days": [0]
+  },
+  {
+    "slug": "izakaya-ginji",
+    "name": "Izakaya Ginji",
+    "cuisine": "Japanese",
+    "neighborhood": "San Mateo",
+    "price_range": 3,
+    "external_rating": 3.9,
+    "added_by": "Jessie",
+    "notes": "Classic neighborhood izakaya with yakitori and small plates in a warm, lively atmosphere.",
+    "website": "https://izakayaginji.com",
     "closed_days": [0]
   }
 ]
