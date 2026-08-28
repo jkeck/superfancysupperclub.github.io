@@ -183,12 +183,14 @@ const jsonLd = {
     <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
       <div class="lightbox-backdrop"></div>
       <button class="lightbox-close" aria-label="Close photo viewer">✕</button>
-      <button class="lightbox-nav lightbox-prev" aria-label="Previous photo">&#8249;</button>
       <div class="lightbox-details lightbox-caption" id="lightbox-caption"></div>
-      <div class="lightbox-stage">
-        <img id="lightbox-img" src="" alt="" />
+      <div class="lightbox-mid">
+        <button class="lightbox-nav lightbox-prev" aria-label="Previous photo">&#8249;</button>
+        <div class="lightbox-stage">
+          <img id="lightbox-img" src="" alt="" />
+        </div>
+        <button class="lightbox-nav lightbox-next" aria-label="Next photo">&#8250;</button>
       </div>
-      <button class="lightbox-nav lightbox-next" aria-label="Next photo">&#8250;</button>
       <div class="lightbox-details lightbox-counter" id="lightbox-counter"></div>
     </div>
 
@@ -315,13 +317,21 @@ const jsonLd = {
   .gallery-item:hover img { opacity: 0.88; }
 
   /* ── Lightbox ──────────────────────────────────────────────── */
+  /* The close icon, caption, and counter sit in their own flex rows
+     above/below the image, and the nav arrows are flex siblings of
+     the image itself — so they always hug the photo's actual edges
+     instead of being stranded at the screen edges, while never
+     overlapping it, at any image size or browser zoom level. */
   .lightbox {
     position: fixed;
     inset: 0;
     z-index: 100;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: clamp(10px, 1.5vh, 18px);
+    padding: clamp(48px, 7vh, 72px) clamp(20px, 4vw, 48px) clamp(28px, 5vh, 48px);
   }
   .lightbox[hidden] { display: none; }
 
@@ -332,47 +342,49 @@ const jsonLd = {
     cursor: pointer;
   }
 
-  .lightbox-stage {
+  .lightbox-mid {
     position: relative;
     z-index: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    max-width: calc(100vw - 120px);
-    max-height: calc(100vh - 80px);
+    gap: clamp(10px, 2.5vw, 28px);
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
   }
-  @media (max-width: 600px) {
-    .lightbox-stage {
-      max-width: calc(100vw - 32px);
-      max-height: calc(100vh - 120px);
-    }
+
+  .lightbox-stage {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 0;
   }
 
   #lightbox-img {
     display: block;
-    max-width: 100%;
-    max-height: calc(100vh - 80px);
+    max-width: min(80vw, 1400px);
+    max-height: min(76vh, 900px);
     object-fit: contain;
     border: 1px solid var(--brass-faint);
     box-shadow: 0 0 60px rgba(0,0,0,0.7);
     user-select: none;
     -webkit-user-drag: none;
   }
-  @media (max-width: 600px) {
-    #lightbox-img { max-height: calc(100vh - 120px); }
-  }
 
   .lightbox-close {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 2;
+    top: clamp(12px, 2vh, 22px);
+    right: clamp(12px, 2vw, 26px);
+    z-index: 3;
     background: none;
     border: none;
-    color: var(--brass-lo);
-    font-size: 22px;
+    color: var(--brass);
+    font-size: clamp(20px, 2.2vw, 28px);
     line-height: 1;
-    padding: 8px 10px;
+    padding: 10px 14px;
     cursor: pointer;
     transition: color 0.15s;
     font-family: var(--serif-body);
@@ -380,52 +392,38 @@ const jsonLd = {
   .lightbox-close:hover { color: var(--brass-hi); }
 
   .lightbox-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    position: relative;
     z-index: 2;
+    flex: 0 0 auto;
     background: none;
     border: none;
-    color: var(--brass-lo);
-    font-size: 56px;
+    color: var(--brass);
+    font-size: clamp(32px, 4.5vw, 60px);
     line-height: 1;
-    padding: 12px 18px;
+    padding: 10px 6px;
     cursor: pointer;
     transition: color 0.15s;
     font-family: var(--serif-body);
     user-select: none;
   }
-  .lightbox-nav:hover { color: var(--brass); }
-  .lightbox-prev { left: 5px; }
-  .lightbox-next { right: 5px; }
+  .lightbox-nav:hover { color: var(--brass-hi); }
   .lightbox-nav[hidden] { display: none; }
 
-  @media (max-width: 600px) {
-    .lightbox-nav {
-      font-size: 40px;
-      padding: 10px 12px;
-    }
-  }
-
   .lightbox-details {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
     z-index: 2;
+    flex: 0 0 auto;
     font-family: var(--serif-display);
-    font-size: 10px;
-    letter-spacing: 0.35em;
-    color: var(--brass-lo);
+    font-size: clamp(11px, 1.2vw, 14px);
+    letter-spacing: 0.28em;
+    color: var(--brass);
     text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .lightbox-caption {
-    top: 24px;
+    text-align: center;
+    max-width: min(80vw, 700px);
   }
 
   .lightbox-counter {
-    bottom: 23px;
+    white-space: nowrap;
   }
 
   .map-section {
